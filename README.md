@@ -20,6 +20,6 @@ If anyone desires to clone and run this code, the included libraries must be pre
 
 # Contact
 
-For questions about this repository you can contact:\n
-Mike Ford – fordmich@mail.gvsu.edu\n
+For questions about this repository you can contact:  
+Mike Ford – fordmich@mail.gvsu.edu  
 David Bizzocchi – bizzoccd@mail.gvsu.edu
