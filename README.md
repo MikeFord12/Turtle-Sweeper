@@ -1,6 +1,6 @@
 # Turtle-Sweeper
 
-#Background
+# Background
 
 This repository holds the code for the turtle sweeper team's GVSU final project. Code for each module, libraries, and then main logic code are included.
 
@@ -10,16 +10,16 @@ The goal is to design an easy to use system that can easily find and identify tu
 
 The UI was designed using modules compatible with the Arduino microcontroller to include event saving functionality, GPS location, LCD display, battery level indication, and keeping time. The mechanical design was inspired by a metal detector wand. The metal detector design will increase the reach of the user and place the antenna closer to the specimen. Overall this design will improve the ability to control the antenna and improve its portability. The increased portability will enable the user to cover more ground and search in areas that might be difficult to reach. 
 
-#Setup
+# Setup
 
 If anyone desires to clone and run this code, the included libraries must be present in the user’s Arduino IDE. The Arduino IDE used for development is Version 1.8.5. The SD, SoftwareSerial, Wire, and SPI libraries used are included in the Arduino IDE. The external libraries used are included in the Github repo. 
 
 ---------------------------------------------------------------------
-IN ORDER FOR THESE TO WORK YOU MUST PUT THESE LIBRARY FOLDERS IN YOUR “Arduino->libraries” DIRECTORY. IF THERE IS NO LIBRARIES FOLDER IN YOUR ARDUINO DIRECTORY, YOU MUST CREATE ONE AND PUT THE LIBRARY FOLDERS INSIDE OF THERE.
+**In order for these to work you must put these library folders in your “arduino->libraries” directory. If there is no libraries folder in your arduino directory, you must create one and put the library folders inside of there.**
 ---------------------------------------------------------------------
 
-#Contact
+# Contact
 
-For questions about this repository you can contact:
-Mike Ford – fordmich@mail.gvsu.edu
+For questions about this repository you can contact:\n
+Mike Ford – fordmich@mail.gvsu.edu\n
 David Bizzocchi – bizzoccd@mail.gvsu.edu
