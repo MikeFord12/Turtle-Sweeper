@@ -17,9 +17,6 @@ void setupGPS();
 //Convert UTS timestamp to EST
 void adjustTime( NeoGPS::time_t & dt );
 
-//GPS object to parse GPS receiver data
-extern NMEAGPS gps;
-//Fix object hold GPS receiver data in data structure
-extern gps_fix fix;
+
 
 #endif

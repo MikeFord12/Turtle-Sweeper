@@ -15,7 +15,7 @@
 
    * Including `SD.h` automatically creates a global
      `SD` object which can be interacted with in a similar
-     manner to other standard global objects like `Serial` and `Ethernet`.
+     manner to other standard global objects like `NeoSerial` and `Ethernet`.
 
    * Boilerplate initialisation code is contained in one method named 
      `begin` and no further objects need to be created in order to access
@@ -577,24 +577,24 @@ boolean SDClass::remove(const char *filepath) {
 File File::openNextFile(uint8_t mode) {
   dir_t p;
 
-  //Serial.print("\t\treading dir...");
+  //NeoSerial.print("\t\treading dir...");
   while (_file->readDir(&p) > 0) {
 
     // done if past last used entry
     if (p.name[0] == DIR_NAME_FREE) {
-      //Serial.println("end");
+      //NeoSerial.println("end");
       return File();
     }
 
     // skip deleted entry and entries for . and  ..
     if (p.name[0] == DIR_NAME_DELETED || p.name[0] == '.') {
-      //Serial.println("dots");
+      //NeoSerial.println("dots");
       continue;
     }
 
     // only list subdirectories and files
     if (!DIR_IS_FILE_OR_SUBDIR(&p)) {
-      //Serial.println("notafile");
+      //NeoSerial.println("notafile");
       continue;
     }
 
@@ -602,19 +602,19 @@ File File::openNextFile(uint8_t mode) {
     SdFile f;
     char name[13];
     _file->dirName(p, name);
-    //Serial.print("try to open file ");
-    //Serial.println(name);
+    //NeoSerial.print("try to open file ");
+    //NeoSerial.println(name);
 
     if (f.open(_file, name, mode)) {
-      //Serial.println("OK!");
+      //NeoSerial.println("OK!");
       return File(f, name);    
     } else {
-      //Serial.println("ugh");
+      //NeoSerial.println("ugh");
       return File();
     }
   }
 
-  //Serial.println("nothing");
+  //NeoSerial.println("nothing");
   return File();
 }
 

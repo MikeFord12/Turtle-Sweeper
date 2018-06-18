@@ -29,10 +29,10 @@ File::File(SdFile f, const char *n) {
     
     /* for debugging file open/close leaks
        nfilecount++;
-       Serial.print("Created \"");
-       Serial.print(n);
-       Serial.print("\": ");
-       Serial.println(nfilecount, DEC);
+       NeoSerial.print("Created \"");
+       NeoSerial.print(n);
+       NeoSerial.print("\": ");
+       NeoSerial.println(nfilecount, DEC);
     */
   }
 }
@@ -40,7 +40,7 @@ File::File(SdFile f, const char *n) {
 File::File(void) {
   _file = 0;
   _name[0] = 0;
-  //Serial.print("Created empty file object");
+  //NeoSerial.print("Created empty file object");
 }
 
 // returns a pointer to the file name
@@ -132,8 +132,8 @@ void File::close() {
 
     /* for debugging file open/close leaks
     nfilecount--;
-    Serial.print("Deleted ");
-    Serial.println(nfilecount, DEC);
+    NeoSerial.print("Deleted ");
+    NeoSerial.println(nfilecount, DEC);
     */
   }
 }

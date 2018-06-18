@@ -22,6 +22,7 @@
 #include <avr/pgmspace.h>
 #endif
 #include <Arduino.h>
+#include <NeoHWSerial.h>
 //------------------------------------------------------------------------------
 // callback function for date/time
 void (*SdFile::dateTime_)(uint16_t* date, uint16_t* time) = NULL;
@@ -187,7 +188,7 @@ void SdFile::dirName(const dir_t& dir, char* name) {
   name[j] = 0;
 }
 //------------------------------------------------------------------------------
-/** List directory contents to Serial.
+/** List directory contents to NeoSerial.
  *
  * \param[in] flags The inclusive OR of
  *
@@ -215,7 +216,7 @@ void SdFile::ls(uint8_t flags, uint8_t indent) {
     if (!DIR_IS_FILE_OR_SUBDIR(p)) continue;
 
     // print any indent spaces
-    for (int8_t i = 0; i < indent; i++) Serial.print(' ');
+    for (int8_t i = 0; i < indent; i++) NeoSerial.print(' ');
 
     // print file name with possible blank fill
     printDirName(*p, flags & (LS_DATE | LS_SIZE) ? 14 : 0);
@@ -223,15 +224,15 @@ void SdFile::ls(uint8_t flags, uint8_t indent) {
     // print modify date/time if requested
     if (flags & LS_DATE) {
        printFatDate(p->lastWriteDate);
-       Serial.print(' ');
+       NeoSerial.print(' ');
        printFatTime(p->lastWriteTime);
     }
     // print size if requested
     if (!DIR_IS_SUBDIR(p) && (flags & LS_SIZE)) {
-      Serial.print(' ');
-      Serial.print(p->fileSize);
+      NeoSerial.print(' ');
+      NeoSerial.print(p->fileSize);
     }
-    Serial.println();
+    NeoSerial.println();
 
     // list subdirectory content if requested
     if ((flags & LS_R) && DIR_IS_SUBDIR(p)) {
@@ -585,7 +586,7 @@ uint8_t SdFile::openRoot(SdVolume* vol) {
   return true;
 }
 //------------------------------------------------------------------------------
-/** %Print the name field of a directory entry in 8.3 format to Serial.
+/** %Print the name field of a directory entry in 8.3 format to NeoSerial.
  *
  * \param[in] dir The directory structure containing the name.
  * \param[in] width Blank fill name if length is less than \a width.
@@ -595,37 +596,37 @@ void SdFile::printDirName(const dir_t& dir, uint8_t width) {
   for (uint8_t i = 0; i < 11; i++) {
     if (dir.name[i] == ' ')continue;
     if (i == 8) {
-      Serial.print('.');
+      NeoSerial.print('.');
       w++;
     }
-    Serial.write(dir.name[i]);
+    NeoSerial.write(dir.name[i]);
     w++;
   }
   if (DIR_IS_SUBDIR(&dir)) {
-    Serial.print('/');
+    NeoSerial.print('/');
     w++;
   }
   while (w < width) {
-    Serial.print(' ');
+    NeoSerial.print(' ');
     w++;
   }
 }
 //------------------------------------------------------------------------------
-/** %Print a directory date field to Serial.
+/** %Print a directory date field to NeoSerial.
  *
  *  Format is yyyy-mm-dd.
  *
  * \param[in] fatDate The date field from a directory entry.
  */
 void SdFile::printFatDate(uint16_t fatDate) {
-  Serial.print(FAT_YEAR(fatDate));
-  Serial.print('-');
+  NeoSerial.print(FAT_YEAR(fatDate));
+  NeoSerial.print('-');
   printTwoDigits(FAT_MONTH(fatDate));
-  Serial.print('-');
+  NeoSerial.print('-');
   printTwoDigits(FAT_DAY(fatDate));
 }
 //------------------------------------------------------------------------------
-/** %Print a directory time field to Serial.
+/** %Print a directory time field to NeoSerial.
  *
  * Format is hh:mm:ss.
  *
@@ -633,13 +634,13 @@ void SdFile::printFatDate(uint16_t fatDate) {
  */
 void SdFile::printFatTime(uint16_t fatTime) {
   printTwoDigits(FAT_HOUR(fatTime));
-  Serial.print(':');
+  NeoSerial.print(':');
   printTwoDigits(FAT_MINUTE(fatTime));
-  Serial.print(':');
+  NeoSerial.print(':');
   printTwoDigits(FAT_SECOND(fatTime));
 }
 //------------------------------------------------------------------------------
-/** %Print a value as two digits to Serial.
+/** %Print a value as two digits to NeoSerial.
  *
  * \param[in] v Value to be printed, 0 <= \a v <= 99
  */
@@ -648,7 +649,7 @@ void SdFile::printTwoDigits(uint8_t v) {
   str[0] = '0' + v/10;
   str[1] = '0' + v % 10;
   str[2] = 0;
-  Serial.print(str);
+  NeoSerial.print(str);
 }
 //------------------------------------------------------------------------------
 /**

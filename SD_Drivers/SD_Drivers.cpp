@@ -1,5 +1,5 @@
 #include "SD_Drivers.h"
-#include "Globals.h"
+
 
 
 /**
@@ -12,27 +12,27 @@
  */
 int initializeSDCard()
 {
-        Serial.print("Initializing SD card...");
+        NeoSerial.print("Initializing SD card...");
 
         // see if the card is present and can be initialized:
         if (!SD.begin(SD_CARD_SLAVE_SELECT_PIN))
         {
                 //Error initializing card
-                Serial.println("SD Card failed, or not present");
+                NeoSerial.println("SD Card failed, or not present");
                 return 0;
         }
 
         //If card initialized correctly, check for or create data file
-        Serial.println("Card initialized. Checking for DetectionEventData.csv");
+        NeoSerial.println("Card initialized. Checking for DetectionEventData.csv");
 
         if (SD.exists(DATAFILE))
         {
                 //If file already found, initialization complete.
-                Serial.println("Data file found.");
+                NeoSerial.println("Data file found.");
         }
         else
         {
-                Serial.println("DetectionEventData.csv not found. Creating File");
+                NeoSerial.println("DetectionEventData.csv not found. Creating File");
                 //create csv file
                 detectionData = SD.open(DATAFILE);
 
@@ -45,7 +45,7 @@ int initializeSDCard()
                 else
                 {
                         //Error opening data file, return false
-                        Serial.println("Error creating data file");
+                        NeoSerial.println("Error creating data file");
                         return 0;
                 }
         }
@@ -82,7 +82,7 @@ int logDetectionEvent(String idNum, String timeStamp, String GPSCoords)
         }
         else
         {
-                Serial.println("Error writing to file !");
+                NeoSerial.println("Error writing to file !");
                 return 0;
         }
 }

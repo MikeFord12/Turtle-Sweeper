@@ -1,5 +1,4 @@
 #include "LEDs.h"
-#include "Globals.h"
 
 /**
  * Function: setupLEDS()
