@@ -14,9 +14,13 @@ gps_fix fix;
 int STATE;
 
 void setup() {
-  //setup LED pins and GPS communication
+
   setupLEDS();
   setupGPS();
+
+  //TODO
+  //Initialize RFID Reader, LCD, SD, and oushbuttons if needed
+  
   //initialize state to main screen
   STATE = MAIN_SCREEN;
 
@@ -65,11 +69,33 @@ void loop() {
   //code if system is in main state
   if (STATE == MAIN_SCREEN)
   {
+    //LED = Green
+    
+    //Loop checking for high signal from RFID reader
+
+    //If signal is high, make sure we haven't already detected that turtle
+    
+    //Check time to see if we need to update display screen (if Minute changed)
+
+    //TODO: Figure out battery charge
 
   }
   //code if turtle found
   if (STATE == DETECTION_SCREEN)
   {
+    //LED = Red
+
+    //Sound buzzer for 5 seconds?
+
+    //Get GPS coords, Timestamp, and tag ID
+
+    //Draw Screen
+
+    //Wait for either Yes or no to log data
+
+    //If Yes: Log to SD card
+
+    //If No: Go back to MAIN_SCREEN state
 
   }
 
