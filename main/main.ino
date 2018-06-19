@@ -1,3 +1,5 @@
+#include <SD_Drivers.h>
+
 #include <SPI.h>
 #include <SD.h>
 #include <NeoHWSerial.h>
@@ -6,6 +8,7 @@
 #include <LEDs.h>
 #include <GPS.h>
 #include "Globals.h"
+
 
 //GPS object and fix object
 NMEAGPS gps;
@@ -20,7 +23,7 @@ void setup() {
 
   //TODO
   //Initialize RFID Reader, LCD, SD, and oushbuttons if needed
-  
+
   //initialize state to main screen
   STATE = MAIN_SCREEN;
 
@@ -70,11 +73,12 @@ void loop() {
   if (STATE == MAIN_SCREEN)
   {
     //LED = Green
-    
+    displayGreen();
+
     //Loop checking for high signal from RFID reader
 
     //If signal is high, make sure we haven't already detected that turtle
-    
+
     //Check time to see if we need to update display screen (if Minute changed)
 
     //TODO: Figure out battery charge
@@ -83,21 +87,52 @@ void loop() {
   //code if turtle found
   if (STATE == DETECTION_SCREEN)
   {
+    detectionEventInfo detectionEvent;
+
     //LED = Red
+    displayRed();
 
     //Sound buzzer for 5 seconds?
 
-    //Get GPS coords, Timestamp, and tag ID
+    //Get/store GPS coords, Timestamp, and tag ID
 
-    //Draw Screen
+    //TODO:Get tag ID from RFID reader and save to struct
 
-    //Wait for either Yes or no to log data
+    if (gps.available())
+    {
+      //Read Fix
+      fix = gps.read();
+      //If location vaild
+      if (fix.valid.location)
+      {
+        detectionEvent.latitude = fix.latitudeL();
+        detectionEvent.longitude = fix.longitudeL();
+      }
+      if (fix.valid.time && fix.valid.date)
+      {
+        //Adjust time to EST
+        adjustTime(fix.dateTime);
+        //Convert from military time to conventional
+        fix.dateTime.setAMorPM();
 
-    //If Yes: Log to SD card
+        //TODO:Convert struct to string and save to detectionEvent
+      }
 
-    //If No: Go back to MAIN_SCREEN state
+
+
+      //Draw Screen
+
+      //Wait for either Yes or no to log data (check input push buttons)
+
+      //If Yes: Log to SD card
+      if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeStamp, detectionEvent.latitude, detectionEvent.longitude)))
+      {
+        DEBUG_PORT.println("Error logging to SD Card");
+      }
+      //If No: Go back to MAIN_SCREEN state
+      STATE = MAIN_SCREEN;
+
+    }
 
   }
-
 }
-

@@ -3,16 +3,27 @@
 
 #include "Arduino.h"
 #include <SD.h>
+#include <NeoHWSerial.h>
 
 //SD Card
 #define SD_CARD_SLAVE_SELECT_PIN 53
 #define DATAFILE "DetectionEventData.csv"
 
+struct detectionEventInfo
+{
+        int tagID;
+        String timeStamp;
+        float latitude;
+        float longitude;
+};
+
 //Sets up SD card communication and data file
 int initializeSDCard();
 
 //Constructs string and logs data based on parameters passed in
-int logDetectionEvent(String idNum, String timeStamp, String GPSCoords);
+int logDetectionEvent(int idNum, String timeStamp, float Lat, float Long);
+
+int logHeader();
 
 //File object for data file
 extern File detectionData;

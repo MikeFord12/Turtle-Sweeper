@@ -39,7 +39,7 @@ int initializeSDCard()
                 if (detectionData)
                 {
                         //Add row headers
-                        logDetectionEvent("Turtle ID", "Time Stamp", "GPS Coordinates");
+                        logHeader();
                         detectionData.close();
                 }
                 else
@@ -64,12 +64,37 @@ int initializeSDCard()
  * Return: 1: if data written successfully
  *         0: if data not logged successfully
  */
-int logDetectionEvent(String idNum, String timeStamp, String GPSCoords)
+int logDetectionEvent(int idNum, String timeStamp, float Lat, float Long)
 {
+File detectionData;
         // make a string for assembling the data to log:
         String dataString = "";
         // convert to CSV
-        dataString = idNum + "," + timeStamp + "," + GPSCoords;
+        dataString = String(idNum,DEC) + "," + timeStamp + "," + String(Lat,7) + "," + String(Long,7);
+
+        //open file
+        detectionData = SD.open(DATAFILE, FILE_WRITE);
+        if (detectionData)
+        {
+                //write to and close file
+                detectionData.println(dataString);
+                detectionData.close();
+                return 1;
+        }
+        else
+        {
+                NeoSerial.println("Error writing to file !");
+                return 0;
+        }
+}
+
+int logHeader()
+{
+	File detectionData;
+        // make a string for assembling the data to log:
+        String dataString = "";
+        // convert to CSV
+        dataString = "Tag ID,Time,Latitude,Longitude";
 
         //open file
         detectionData = SD.open(DATAFILE, FILE_WRITE);
