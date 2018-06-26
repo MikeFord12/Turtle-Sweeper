@@ -1,5 +1,5 @@
 #include <SD_Drivers.h>
-
+#include <LCD.h>
 #include <SPI.h>
 #include <SD.h>
 #include <NeoHWSerial.h>
