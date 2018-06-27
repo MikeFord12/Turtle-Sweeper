@@ -1,3 +1,5 @@
+#ifndef _Sparkfun_UFH_RFID_Reader_h
+#define _Sparkfun_UFH_RFID_Reader_h
 /*
   Library for controlling the Nano M6E from ThingMagic
   This is a stripped down implementation of the Mercury API from ThingMagic
@@ -160,3 +162,4 @@ class RFID
     
     boolean _printDebug = false; //Flag to print the serial commands we are sending to the Serial port for debug
 };
+#endif

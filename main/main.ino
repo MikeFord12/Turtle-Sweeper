@@ -1,5 +1,11 @@
+#include <PushButtons.h>
+
+#include <RFID_Drivers.h>
+#include <SparkFun_UHF_RFID_Reader.h>
 #include <SD_Drivers.h>
 #include <LCD.h>
+#include "Adafruit_GFX.h"
+#include "Adafruit_ILI9341.h"
 #include <SPI.h>
 #include <SD.h>
 #include <NeoHWSerial.h>
@@ -13,16 +19,32 @@
 //GPS object and fix object
 NMEAGPS gps;
 gps_fix fix;
+//RFID object
+RFID nano;
+
+//time tracking variables for updating time and checking batteries
+int previousMinute = 0;
+int previousBatteryCheckTime = 0;
+
 //Program state variable
 int STATE;
 
+//display variable
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
+
 void setup() {
 
+  //Initialize RFID Reader, LCD, GPS, LEDS
   setupLEDS();
   setupGPS();
+  setupLCD();
+  setupNano(38400);
+  setupCommunication();
+  //TODO: Initialize pushbuttons and SD card
 
-  //TODO
-  //Initialize RFID Reader, LCD, SD, and oushbuttons if needed
+
+  //TODO: initial battery check
+
 
   //initialize state to main screen
   STATE = MAIN_SCREEN;
@@ -36,68 +58,73 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
-  //If a new fix is available to read
-  if (gps.available()) {
-    //Read Fix
-    fix = gps.read();
-    //If location vaild
-    if (fix.valid.location)
-    {
-      //Print out long and lat
-      //Eventually save these if turtle found, no need to print out
-      DEBUG_PORT.println(fix.latitudeL());
-      DEBUG_PORT.println(fix.longitudeL());
-    }
-    //If time stamp is valid
-    if (fix.valid.time && fix.valid.date)
-    {
-      //Adjust time to EST
-      adjustTime(fix.dateTime);
-      //Convert from military time to conventional
-      fix.dateTime.setAMorPM();
-
-      //Print out time
-      //Eventually save these if turtle found, no need to print out
-      DEBUG_PORT << fix.dateTime;
-      DEBUG_PORT.print(" "); DEBUG_PORT.println(fix.dateTime.AMorPM);
-    }
-  }
-  //see if GPS overrun
-  if (gps.overrun())
-  {
-    gps.overrun( false );
-    DEBUG_PORT.println( F("DATA OVERRUN: took too long to print GPS data!") );
-  }
-
   //code if system is in main state
   if (STATE == MAIN_SCREEN)
   {
-    //LED = Green
+    //LED = Green and display main screen
     displayGreen();
+    drawMainScreen();
+
+    //Begin scanning for tags
+    nano.startReading();
 
     //Loop checking for high signal from RFID reader
+    if (nano.check() == true) //Check to see if any new data has come in from module
+    {
+      byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
 
-    //If signal is high, make sure we haven't already detected that turtle
+      //only check if we found a tag, dont care about anything else
+      if (responseType == RESPONSE_IS_TAGFOUND)
+      {
+        STATE = DETECTION_SCREEN;
+      }
+    }
+
+    //TODO: Design system to guard against repeat detections
 
     //Check time to see if we need to update display screen (if Minute changed)
+    if (gps.available())
+    {
+      //Read Fix
+      fix = gps.read();
+      //If the minute has changed since last read
+      if (fix.dateTime.minutes != previousMinute && fix.valid.time)
+      {
+        //update with new minute and write the new time to LCD
+        previousMinute = fix.dateTime.minutes;
+        writeTime(fix.dateTime.hours, fix.dateTime.minutes);
+      }
+    }
 
-    //TODO: Figure out battery charge
+    //If we havent checked the battery charge in over 10 minutes
+    if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS)
+    {
+      //update new battery check time
+      previousBatteryCheckTime = millis();
 
+      //TODO: check battery charge
+      //TODO: void writeCharge(int charge);
+    }
   }
+
   //code if turtle found
   if (STATE == DETECTION_SCREEN)
   {
+    //initilize detection event structure
     detectionEventInfo detectionEvent;
+    char dateString[50];
 
     //LED = Red
     displayRed();
 
-    //Sound buzzer for 5 seconds?
+    //TODO: Implement sounding buzzer
 
-    //Get/store GPS coords, Timestamp, and tag ID
 
     //TODO:Get tag ID from RFID reader and save to struct
 
+
+    //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
+    while (!gps.available());
     if (gps.available())
     {
       //Read Fix
@@ -115,14 +142,18 @@ void loop() {
         //Convert from military time to conventional
         fix.dateTime.setAMorPM();
 
-        //TODO:Convert struct to string and save to detectionEvent
+        //Format date string and save
+        sprintf(dateString, "%d:%d:%d %d-%d-%d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds, fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
+
+        detectionEvent.timeStamp = dateString;
       }
 
 
 
-      //Draw Screen
+      //After data collection, Draw Screen
+      //drawDetectionScreen();
 
-      //Wait for either Yes or no to log data (check input push buttons)
+      //TODO: Wait for either Yes or no to log data (check input push buttons)
 
       //If Yes: Log to SD card
       if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeStamp, detectionEvent.latitude, detectionEvent.longitude)))
@@ -136,3 +167,4 @@ void loop() {
 
   }
 }
+

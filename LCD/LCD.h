@@ -23,13 +23,15 @@
 
 extern Adafruit_ILI9341 tft;
 
+
 void drawMainScreen();
 void drawCriticalBatteryScreen();
-void drawDetectionScreen();
+void drawDetectionScreenS(String ID, String timeStamp, String longitude, String latitude);
+
 void setupLCD();
 void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize);
-
-
+void writeTime(int hours, int minutes);
+void writeCharge(int charge);
 
 
 #endif

@@ -28,21 +28,33 @@ void drawCriticalBatteryScreen()
         tft.print("LOW");
 }
 
-void drawDetectionScreen()
+void drawDetectionScreenS(int ID, String timeStamp, float Long, float Lat)
 {
+        char IDString[20];
+        char timeString[30];
+        char LongString[20];
+        char LatString[20];
 
         tft.fillScreen(BLACK);
         setupText(60,5,GREEN,2);
         tft.print("TURTLE DETECTED");
         tft.drawRect(10,25,300,90,WHITE);
+
         setupText(15,30,WHITE,2);
-        tft.print("ID: XX-XX-XX-XX-XX-XX-XX");
+        sprintf(IDString,"ID: %d",ID);
+        tft.print(IDString);
+
         setupText(15,50,WHITE,2);
-        tft.print("Time: HH:MM:SS AM");
+        sprintf(timeString,"Time: %s",timeStamp.c_str());
+        tft.print(timeString);
+
         setupText(15,70,WHITE,2);
-        tft.print("GPS Long: XX.XXXXX");
+        sprintf(LongString,"GPS Long: %f",Long);
+        tft.print(LongString);
+
         setupText(15,90,WHITE,2);
-        tft.print("GPS Lat:  XX.XXXXX");
+        sprintf(LatString,"GPS Lat: %f",Lat);
+        tft.print(LatString);
 
         setupText(8,150,WHITE,2);
         tft.print("Save this detection event?");
