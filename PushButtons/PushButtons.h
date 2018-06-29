@@ -5,16 +5,14 @@
 #include <string.h>
 
 // PushButton Pins
-#define UP_BUTTON_PIN 38
-#define DOWN_BUTTON_PIN 39
-#define LEFT_BUTTON_PIN 40
-#define RIGHT_BUTTON_PIN 41
+#define LEFT_BUTTON_PIN 30
+#define RIGHT_BUTTON_PIN 32
+#define SELECT_BUTTON_PIN 34
 
 #define BUTTON_NONE 0
-#define BUTTON_UP 1
-#define BUTTON_DOWN 2
-#define BUTTON_LEFT 3
-#define BUTTON_RIGHT 4
+#define BUTTON_LEFT 1
+#define BUTTON_RIGHT 2
+#define BUTTON_SELECT 3
 
 // Set delay time
 #define DEBOUNCE_ITERATIONS 5

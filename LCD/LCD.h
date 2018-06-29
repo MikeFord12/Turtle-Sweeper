@@ -21,17 +21,22 @@
 #define YELLOW   0xFFE0
 #define WHITE    0xFFFF
 
+#define NO_SELECTED 0
+#define YES_SELECTED 1
+
 extern Adafruit_ILI9341 tft;
 
 
 void drawMainScreen();
 void drawCriticalBatteryScreen();
-void drawDetectionScreenS(String ID, String timeStamp, String longitude, String latitude);
+void drawDetectionScreenS(int ID, String timeStamp, float Long, float Lat);
 
 void setupLCD();
 void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize);
 void writeTime(int hours, int minutes);
 void writeCharge(int charge);
-
+void drawYesSelection();
+void drawNoSelection();
+int optionSelected();
 
 #endif

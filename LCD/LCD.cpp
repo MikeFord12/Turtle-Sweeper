@@ -1,5 +1,8 @@
 #include "LCD.h"
 
+extern Adafruit_ILI9341 tft;
+int userSelection;
+
 void drawMainScreen()
 {
         tft.fillScreen(BLACK);
@@ -59,12 +62,13 @@ void drawDetectionScreenS(int ID, String timeStamp, float Long, float Lat)
         setupText(8,150,WHITE,2);
         tft.print("Save this detection event?");
 
-        setupText(140,180,WHITE,2);
-        tft.print("Yes");
-        setupText(148,200,WHITE,2);
-        tft.print("No");
+        setupText(80, 190, WHITE, 2);
+		tft.print("Yes");
+		setupText(208, 190, WHITE, 2);
+		tft.print("No");
 
-
+		tft.fillTriangle(61, 190, 61, 202, 73, 196, GREEN);
+		tft.fillTriangle(188, 190, 188, 202, 200, 196, BLACK);
 }
 
 void writeTime(int hours, int minutes)
@@ -89,7 +93,7 @@ void setupLCD()
 {
         tft.begin();
         tft.setRotation(3);
-
+		userSelection = YES_SELECTED;
 }
 
 void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize)
@@ -98,4 +102,25 @@ void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize
         tft.setTextColor(color);
         tft.setTextSize(fontSize);
         tft.setTextWrap(false);
+}
+
+void drawYesSelection()
+{
+	tft.fillTriangle(61, 190, 61, 202, 73, 196, GREEN);
+	tft.fillTriangle(188, 190, 188, 202, 200, 196, BLACK);
+	userSelection = YES_SELECTED;
+}
+
+void drawNoSelection()
+{
+	tft.fillTriangle(61, 190, 61, 202, 73, 196, BLACK);
+	tft.fillTriangle(188, 190, 188, 202, 200, 196, GREEN);
+	userSelection = NO_SELECTED;
+}
+
+int optionSelected()
+{
+	int temp = userSelection;
+	userSelection = YES_SELECTED;
+	return temp;
 }

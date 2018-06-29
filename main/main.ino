@@ -1,5 +1,4 @@
 #include <PushButtons.h>
-
 #include <RFID_Drivers.h>
 #include <SparkFun_UHF_RFID_Reader.h>
 #include <SD_Drivers.h>
@@ -26,6 +25,9 @@ RFID nano;
 int previousMinute = 0;
 int previousBatteryCheckTime = 0;
 
+// variable to keep track of button press
+int buttonSelect = BUTTON_NONE;
+
 //Program state variable
 int STATE;
 
@@ -40,8 +42,7 @@ void setup() {
   setupLCD();
   setupNano(38400);
   setupCommunication();
-  //TODO: Initialize pushbuttons and SD card
-
+  setupPushButtons();
 
   //TODO: initial battery check
 
@@ -154,15 +155,32 @@ void loop() {
       //drawDetectionScreen();
 
       //TODO: Wait for either Yes or no to log data (check input push buttons)
-
-      //If Yes: Log to SD card
-      if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeStamp, detectionEvent.latitude, detectionEvent.longitude)))
+      while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
       {
-        DEBUG_PORT.println("Error logging to SD Card");
+        switch (buttonSelect)
+        {
+          case (BUTTON_LEFT):
+            drawYesSelection();
+            break;
+          case (BUTTON_RIGHT):
+            drawNoSelection();
+            break;
+        }
       }
-      //If No: Go back to MAIN_SCREEN state
-      STATE = MAIN_SCREEN;
 
+      if (optionSelected() == YES_SELECTED)
+      {
+        //If Yes: Log to SD card
+        if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeStamp, detectionEvent.latitude, detectionEvent.longitude)))
+        {
+          DEBUG_PORT.println("Error logging to SD Card");
+        }
+      }
+      else
+      {
+        //If No: Go back to MAIN_SCREEN state
+        STATE = MAIN_SCREEN;
+      }
     }
 
   }
