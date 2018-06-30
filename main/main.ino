@@ -1,3 +1,5 @@
+#include <SoftwareSerial.h>
+
 #include <PushButtons.h>
 #include <RFID_Drivers.h>
 #include <SparkFun_UHF_RFID_Reader.h>
@@ -21,7 +23,7 @@ NMEAGPS gps;
 gps_fix fix;
 //RFID object
 RFID nano;
-
+SoftwareSerial softSerial(12, 13); //RX, TX
 //time tracking variables for updating time and checking batteries
 int previousMinute = 0;
 int previousBatteryCheckTime = 0;
@@ -31,7 +33,7 @@ int buttonSelect = BUTTON_NONE;
 
 // current voltage
 double voltage;
-
+char* dataFile = "data.csv";
 //Program state variable
 int STATE;
 
@@ -48,8 +50,14 @@ void setup() {
   setupCommunication();
   setupPushButtons();
 
-  //TODO: initial battery check
-
+  //TODO: Maybe modify or think through logic a little more
+  //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
+  if(getVoltage()<= 6.4)
+  {
+    drawCriticalBatteryScreen();
+    while(1);
+  }
+  
 
   //initialize state to main screen
   STATE = MAIN_SCREEN;
@@ -109,7 +117,7 @@ void loop() {
 
       //check battery charge
       voltage = getVoltage();
-      
+      //TODO: figure out what to display when voltage is the same until 6.8V
       //TODO: void writeCharge(int charge);
     }
   }
@@ -120,15 +128,31 @@ void loop() {
     //initilize detection event structure
     detectionEventInfo detectionEvent;
     char dateString[50];
+    String myEPC = String();
 
     //LED = Red
     displayRed();
 
     //TODO: Implement sounding buzzer
+    
 
-
-    //TODO:Get tag ID from RFID reader and save to struct
-
+    //TODO: This code is untested. See if it actually pulls out the tag ID
+     byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
+      //Print EPC bytes, this is a subsection of bytes from the response/msg array
+      for (byte x = 0 ; x < tagEPCBytes ; x++)
+      {
+        if (nano.msg[31 + x] < 0x10)
+        {
+          myEPC.concat("0"); //Pretty print
+        }
+        
+        myEPC.concat(nano.msg[31 + x]);
+        //NeoSerial.print(nano.msg[31 + x], HEX);
+        //myEPC.concat(" ");
+        //NeoSerial.print(F(" "));
+      }
+      //set tag ID into struct
+      detectionEvent.tagID = myEPC.toInt();
 
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
     while (!gps.available());
@@ -158,7 +182,7 @@ void loop() {
 
 
       //After data collection, Draw Screen
-      //drawDetectionScreen();
+      drawDetectionScreen(detectionEvent.tagID, detectionEvent.timeStamp,detectionEvent.longitude,detectionEvent.latitude);
 
       //TODO: Wait for either Yes or no to log data (check input push buttons)
       while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)

@@ -31,7 +31,7 @@ void drawCriticalBatteryScreen()
         tft.print("LOW");
 }
 
-void drawDetectionScreenS(int ID, String timeStamp, float Long, float Lat)
+void drawDetectionScreen(int ID, String timeStamp, float Long, float Lat)
 {
         char IDString[20];
         char timeString[30];

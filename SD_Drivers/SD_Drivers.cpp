@@ -10,8 +10,8 @@
  * Return: 1: if SD card is present and file created successfully
  *         0: If either SD card is not present or file not created successfully
  */
-int initializeSDCard()
-{
+/*int initializeSDCard()
+   {
         NeoSerial.print("Initializing SD card...");
 
         // see if the card is present and can be initialized:
@@ -25,7 +25,7 @@ int initializeSDCard()
         //If card initialized correctly, check for or create data file
         NeoSerial.println("Card initialized. Checking for DetectionEventData.csv");
 
-        if (SD.exists(DATAFILE))
+        if (SD.exists(dataFile))
         {
                 //If file already found, initialization complete.
                 NeoSerial.println("Data file found.");
@@ -34,7 +34,7 @@ int initializeSDCard()
         {
                 NeoSerial.println("DetectionEventData.csv not found. Creating File");
                 //create csv file
-                detectionData = SD.open(DATAFILE);
+                detectionData = SD.open(dataFile);
 
                 if (detectionData)
                 {
@@ -50,8 +50,8 @@ int initializeSDCard()
                 }
         }
         return 1;
-}
-
+   }
+ */
 /**
  * Function: logDetectionEvent(String idNum, String timeStamp, String GPSCoords)
  *------------------
@@ -66,14 +66,14 @@ int initializeSDCard()
  */
 int logDetectionEvent(int idNum, String timeStamp, float Lat, float Long)
 {
-File detectionData;
+        File detectionData;
         // make a string for assembling the data to log:
         String dataString = "";
         // convert to CSV
-        dataString = String(idNum,DEC) + "," + timeStamp + "," + String(Lat,7) + "," + String(Long,7);
+        dataString = idNum + "," + timeStamp + "," + String(Lat,7) + "," + String(Long,7);
 
         //open file
-        detectionData = SD.open(DATAFILE, FILE_WRITE);
+        detectionData = SD.open(dataFile, FILE_WRITE);
         if (detectionData)
         {
                 //write to and close file
@@ -90,14 +90,14 @@ File detectionData;
 
 int logHeader()
 {
-	File detectionData;
+        File detectionData;
         // make a string for assembling the data to log:
         String dataString = "";
         // convert to CSV
         dataString = "Tag ID,Time,Latitude,Longitude";
 
         //open file
-        detectionData = SD.open(DATAFILE, FILE_WRITE);
+        detectionData = SD.open(dataFile, FILE_WRITE);
         if (detectionData)
         {
                 //write to and close file
