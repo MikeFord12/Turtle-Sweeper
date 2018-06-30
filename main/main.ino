@@ -12,6 +12,7 @@
 #include <NMEAGPS.h>
 #include <LEDs.h>
 #include <GPS.h>
+#include <VoltageReader.h>
 #include "Globals.h"
 
 
@@ -27,6 +28,9 @@ int previousBatteryCheckTime = 0;
 
 // variable to keep track of button press
 int buttonSelect = BUTTON_NONE;
+
+// current voltage
+double voltage;
 
 //Program state variable
 int STATE;
@@ -103,7 +107,9 @@ void loop() {
       //update new battery check time
       previousBatteryCheckTime = millis();
 
-      //TODO: check battery charge
+      //check battery charge
+      voltage = getVoltage();
+      
       //TODO: void writeCharge(int charge);
     }
   }
