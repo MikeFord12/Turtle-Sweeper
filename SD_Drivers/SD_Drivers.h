@@ -7,7 +7,8 @@
 
 //SD Card
 #define SD_CARD_SLAVE_SELECT_PIN 4
-extern char* dataFile;
+//extern char* dataFile;
+extern File myFile;;
 
 struct detectionEventInfo
 {
@@ -18,12 +19,11 @@ struct detectionEventInfo
 };
 
 //Sets up SD card communication and data file
-//int initializeSDCard();
+int initializeSDCard();
 
 //Constructs string and logs data based on parameters passed in
 int logDetectionEvent(int idNum, String timeStamp, float Lat, float Long);
 
-int logHeader();
 
 //File object for data file
 extern File detectionData;

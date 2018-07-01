@@ -33,22 +33,27 @@ int buttonSelect = BUTTON_NONE;
 
 // current voltage
 double voltage;
-char* dataFile = "data.csv";
+
 //Program state variable
 int STATE;
 
 //display variable
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
+//Data file object
+File myFile;
+
 void setup() {
 
   //Initialize RFID Reader, LCD, GPS, LEDS
+  //TODO: add initialization error checking
   setupLEDS();
   setupGPS();
   setupLCD();
   setupNano(38400);
   setupCommunication();
   setupPushButtons();
+   initializeSDCard();
 
   //TODO: Maybe modify or think through logic a little more
   //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
