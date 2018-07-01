@@ -189,7 +189,7 @@ void loop() {
       //After data collection, Draw Screen
       drawDetectionScreen(detectionEvent.tagID, detectionEvent.timeStamp,detectionEvent.longitude,detectionEvent.latitude);
 
-      //TODO: Wait for either Yes or no to log data (check input push buttons)
+      //Wait for either Yes or no to log data (check input push buttons)
       while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
       {
         switch (buttonSelect)
