@@ -4,9 +4,11 @@
 #include "Arduino.h"
 #include <SparkFun_UHF_RFID_Reader.h>
 #include <NeoHWSerial.h>
+#include "SoftwareSerial.h"
 
 
 extern RFID nano;
+extern SoftwareSerial softSerial;
 
 boolean setupNano(long baudRate);
 

@@ -30,6 +30,7 @@ extern Adafruit_ILI9341 tft;
 void drawMainScreen();
 void drawCriticalBatteryScreen();
 void drawDetectionScreen(int ID, String timeStamp, float Long, float Lat);
+void drawInitializationScreen();
 
 void setupLCD();
 void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize);
