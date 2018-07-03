@@ -1,8 +1,8 @@
-#include "voltageReader.h"
+#include "VoltageReader.h"
 
-double getVoltage()
+int getBatteryPercentage()
 {
-	return convertVrefToVoltage(getVref());
+	return convertVrefToPercentage(getVref());
 }
 
 long getVref()
@@ -32,41 +32,41 @@ long getVref()
   return result; // Vcc in millivolts
 }
 
-double convertVrefToVoltage(long vref)
+int convertVrefToPercentage(long vref)
 {
   switch(vref)
   {
-  case 0 ... 4295:
-    return 6.0;
+  case 0 ... 4295:			// >>> Above is red
+    return 10;
 
   case 4296 ... 4387:
-    return 6.1;
+    return 15;
 
   case 4388 ... 4484:
-    return 6.2;
+    return 20;
 
-  case 4485 ... 4584:
-    return 6.3;
+  case 4485 ... 4584:	
+    return 25;
 
-  case 4585 ... 4677:
-    return 6.4;
+  case 4585 ... 4677:		// >>> Above is yellow
+    return 30;
     
   case 4678 ... 4777:
-    return 6.5;
+    return 35;
     
   case 4778 ... 4880:
-    return 6.6;
+    return 40;
     
   case 4881 ... 4988:
-    return 6.7;
+    return 45;
     
   case 4989 ... 5046:
-    return 6.8;
+    return 50;
     
-  case 5047 ... LONG_MAX:
-    return 8.4;
+  case 5047 ... LONG_MAX:	// >>> Above is green, return 100
+    return 100;
     
   default:
-    return 0.0;
+    return 0;
   }
 }

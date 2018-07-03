@@ -4,10 +4,11 @@
 #include "SPI.h"
 #include "limits.h"
 
-double getVoltage();
+int getBatteryPercentage();
 
 // Helper methods
 long getVref();
-double convertVrefToVoltage(long vref);
+int convertVrefToPercentage(long vref);
+int isBatteryCriticallyLow();
 
 #endif

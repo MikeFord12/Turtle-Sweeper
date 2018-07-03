@@ -15,6 +15,7 @@
 #include <LEDs.h>
 #include <GPS.h>
 #include <VoltageReader.h>
+#include <Buzzer.h>
 #include "Globals.h"
 
 
@@ -34,7 +35,7 @@ int previousBatteryCheckTime = 0;
 int buttonSelect = BUTTON_NONE;
 
 // current voltage
-double voltage;
+double battery = 0;
 
 //Program state variable
 int STATE;
@@ -58,7 +59,7 @@ void setup() {
 
   //TODO: Maybe modify or think through logic a little more
   //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
-  if (getVoltage() <= 6.4)
+  if ((battery = getBatteryPercentage()) <= 20)
   {
     drawCriticalBatteryScreen();
     while (1);
@@ -114,9 +115,10 @@ void loop() {
         previousBatteryCheckTime = millis();
 
         //check battery charge
-        voltage = getVoltage();
-        //TODO: figure out what to display when voltage is the same until 6.8V
-        //TODO: void writeCharge(int charge);
+        battery = getBatteryPercentage();
+
+        // Display current battery charge reading
+        writeCharge(battery);
       }
 
       //Check time to see if we need to update display screen (if Minute changed)
