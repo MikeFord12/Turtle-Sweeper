@@ -93,13 +93,20 @@ void writeTime(int hours, int minutes)
 
 void writeCharge(int charge)
 {
-        char stringToWrite [5];
-        tft.fillRect(221,1,98,23,BLACK);
-        sprintf(stringToWrite," %d%%",charge);
-        setupText(245,5,WHITE,2);
-        //tft.print("%%");
-        //  setupText(250,5,WHITE,2);
-        tft.print(stringToWrite);
+        if(charge == 100)
+        {
+                tft.fillRect(221,1,98,23,GREEN);
+        }
+        else
+        {
+                char stringToWrite [5];
+                tft.fillRect(221,1,98,23,BLACK);
+                sprintf(stringToWrite," %d%%",charge);
+                setupText(245,5,WHITE,2);
+                //tft.print("%%");
+                //  setupText(250,5,WHITE,2);
+                tft.print(stringToWrite);
+        }
 }
 
 void setupLCD()

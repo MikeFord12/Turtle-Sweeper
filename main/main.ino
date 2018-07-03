@@ -19,6 +19,8 @@
 
 
 //GPS object and fix object
+int tagIDS[50];
+int turtlesFound = 0;
 NMEAGPS gps;
 gps_fix fix;
 //RFID object
@@ -95,8 +97,11 @@ void loop() {
   if (STATE == MAIN_SCREEN)
   {
     //LED = Green and display main screen
+    String myEPC = String();
+    int turtleAlreadyLogged = 0;
     displayGreen();
     drawMainScreen();
+
     //Begin scanning for tags
     nano.startReading();
 
@@ -138,11 +143,39 @@ void loop() {
         //only check if we found a tag, dont care about anything else
         if (responseType == RESPONSE_IS_TAGFOUND)
         {
-          STATE = DETECTION_SCREEN;
+          //TODO: This code is untested. See if it actually pulls out the tag ID
+          byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
+          //Print EPC bytes, this is a subsection of bytes from the response/msg array
+          for (byte x = 0 ; x < tagEPCBytes ; x++)
+          {
+            if (nano.msg[31 + x] < 0x10)
+            {
+              myEPC.concat("0"); //Pretty print
+            }
+
+            myEPC.concat(nano.msg[31 + x]);
+            //NeoSerial.print(nano.msg[31 + x], HEX);
+            //myEPC.concat(" ");
+            //NeoSerial.print(F(" "));
+          }
+          for (int i = 0; i < turtlesFound; i++)
+          {
+            if (myEPC.toInt() == tagIDS[i])
+            {
+              turtleAlreadyLogged = 1;
+            }
+          }
+          if (!turtleAlreadyLogged)
+          {
+            STATE = DETECTION_SCREEN;
+            tagIDS[turtlesFound] = myEPC.toInt();
+            turtlesFound++;
+          }
+          turtleAlreadyLogged =0;
         }
       }
 
-    }    //TODO: Design system to guard against repeat detecti
+    }    //TODO: Design system to guard against repeat detection
 
   }
 
@@ -152,7 +185,7 @@ void loop() {
     //initilize detection event structure
     detectionEventInfo detectionEvent;
     char dateString[50];
-    String myEPC = String();
+
 
     //LED = Red
     displayRed();
@@ -160,23 +193,9 @@ void loop() {
     //TODO: Implement sounding buzzer
 
 
-    //TODO: This code is untested. See if it actually pulls out the tag ID
-    byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
-    //Print EPC bytes, this is a subsection of bytes from the response/msg array
-    for (byte x = 0 ; x < tagEPCBytes ; x++)
-    {
-      if (nano.msg[31 + x] < 0x10)
-      {
-        myEPC.concat("0"); //Pretty print
-      }
 
-      myEPC.concat(nano.msg[31 + x]);
-      //NeoSerial.print(nano.msg[31 + x], HEX);
-      //myEPC.concat(" ");
-      //NeoSerial.print(F(" "));
-    }
     //set tag ID into struct
-    detectionEvent.tagID = myEPC.toInt();
+    detectionEvent.tagID = tagIDS[turtlesFound-1];
 
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
     while (!gps.available());
