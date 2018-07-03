@@ -59,13 +59,13 @@ int initializeSDCard()
  * Return: 1: if data written successfully
  *         0: if data not logged successfully
  */
-int logDetectionEvent(int idNum, String timeStamp, float Lat, float Long)
+int logDetectionEvent(String idNum, String timeStamp, float Lat, float Long)
 {
         File detectionData;
         // make a string for assembling the data to log:
         String dataString = "";
         // convert to CSV
-        dataString = String(idNum) + "," + timeStamp + "," + String(Lat,7) + "," + String(Long,7);
+        dataString = idNum + "," + timeStamp + "," + String(Lat,7) + "," + String(Long,7);
 
         //open file
         detectionData = SD.open("Data.csv", FILE_WRITE);

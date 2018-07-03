@@ -12,7 +12,7 @@ extern File myFile;;
 
 struct detectionEventInfo
 {
-        int tagID;
+        String tagID;
         String timeStamp;
         float latitude;
         float longitude;
@@ -22,7 +22,7 @@ struct detectionEventInfo
 int initializeSDCard();
 
 //Constructs string and logs data based on parameters passed in
-int logDetectionEvent(int idNum, String timeStamp, float Lat, float Long);
+int logDetectionEvent(String idNum, String timeStamp, float Lat, float Long);
 
 
 //File object for data file
