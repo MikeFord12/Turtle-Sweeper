@@ -5,6 +5,7 @@
 #include "SPI.h"
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
+#include "NeoHWSerial.h"
 
 // For the Adafruit shield, these are the default.
 #define TFT_DC 9
@@ -29,7 +30,7 @@ extern Adafruit_ILI9341 tft;
 
 void drawMainScreen();
 void drawCriticalBatteryScreen();
-void drawDetectionScreen(String ID, String timeStamp, float Long, float Lat);
+int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat);
 void drawInitializationScreen();
 
 void setupLCD();

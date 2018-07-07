@@ -30,7 +30,7 @@ int initializeSDCard()
                 NeoSerial.println("Data.csv doesn't exist.");
                 NeoSerial.println("Creating data.csv...");
                 myFile = SD.open("Data.csv", FILE_WRITE);
-                myFile.println("Tag ID,Time,Latitude,Longitude");
+                myFile.println("Tag ID,Date,Time,Latitude,Longitude");
                 myFile.close();
         }
 
@@ -59,14 +59,23 @@ int initializeSDCard()
  * Return: 1: if data written successfully
  *         0: if data not logged successfully
  */
-int logDetectionEvent(String idNum, String timeStamp, float Lat, float Long)
+int logDetectionEvent(char idNum[], char timeS[], char dateS[], float Lat, float Long)
 {
         File detectionData;
         // make a string for assembling the data to log:
-        String dataString = "";
+        char dataString[100];
+        char longStr[11];
+        char latStr[11];
+        dtostrf(Lat,10,7,latStr);
+        dtostrf(Long,10,7,longStr);
+        //  NeoSerial.print(Lat,7);
+        //NeoSerial.print(Long,7);
         // convert to CSV
-        dataString = idNum + "," + timeStamp + "," + String(Lat,7) + "," + String(Long,7);
-
+        //NeoSerial.printf("%07f  %07f\n",Lat,Long );
+        //  dataString = idNum + "," + timeStamp + "," + String(Lat,7) + "," + String(Long,7);
+        sprintf(dataString,"%s,%s,%s,%s,%s",idNum,dateS,timeS,latStr,longStr);
+        //dataString = String(idNum)+","+String(timeStamp);
+        NeoSerial.println(dataString);
         //open file
         detectionData = SD.open("Data.csv", FILE_WRITE);
         if (detectionData)

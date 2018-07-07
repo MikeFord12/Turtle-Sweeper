@@ -1,3 +1,5 @@
+#include <Buzzer.h>
+
 #include <SoftwareSerial.h>
 
 #include <PushButtons.h>
@@ -15,15 +17,14 @@
 #include <LEDs.h>
 #include <GPS.h>
 #include <VoltageReader.h>
-#include <Buzzer.h>
 #include "Globals.h"
 
 
 //GPS object and fix object
-int tagIDS[50];
-int turtlesFound = 0;
 NMEAGPS gps;
 gps_fix fix;
+char tagIDS[50][50];
+int turtlesFound = 0;
 //RFID object
 RFID nano;
 SoftwareSerial softSerial(12, 13); //RX, TX
@@ -35,7 +36,7 @@ int previousBatteryCheckTime = 0;
 int buttonSelect = BUTTON_NONE;
 
 // current voltage
-double battery = 0;
+double voltage;
 
 //Program state variable
 int STATE;
@@ -45,25 +46,36 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
 //Data file object
 File myFile;
+int firstTime=1;
 
 void setup() {
+  NeoSerial.begin(115200);
+  while (!NeoSerial);
+
 
   //Initialize RFID Reader, LCD, GPS, LEDS
   //TODO: add initialization error checking
   setupLEDS();
+  NeoSerial.println("LEDS initalized");
   setupGPS();
+  NeoSerial.println("GPS initalized");
   setupLCD();
-  setupCommunication();
+  NeoSerial.println("LCD initalized");
+  //setupCommunication();
+  NeoSerial.println("RFID initalized");
   setupPushButtons();
+  NeoSerial.println("Buttons initalized");
   initializeSDCard();
+  NeoSerial.println("SD initalized");
 
   //TODO: Maybe modify or think through logic a little more
   //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
-  if ((battery = getBatteryPercentage()) <= 20)
-  {
-    drawCriticalBatteryScreen();
-    while (1);
-  }
+  /* if (getBatteryPercentage() <= 15)
+    {
+     drawCriticalBatteryScreen();
+     while (1);
+    }
+  */
 
 
   //initialize state to main screen
@@ -71,8 +83,7 @@ void setup() {
 
   //Use for printing out to serial monitor
   //Can remove after debugging is no longer needed
-  DEBUG_PORT.begin(9600);
-  DEBUG_PORT.flush();
+
 
   //TODO: add while until we get a valid GPS fix
   drawInitializationScreen();
@@ -97,30 +108,36 @@ void loop() {
   //code if system is in main state
   if (STATE == MAIN_SCREEN)
   {
+    char myEPC[50] = "45-67-766-456-88";
     //LED = Green and display main screen
-    String myEPC = String();
     int turtleAlreadyLogged = 0;
     displayGreen();
     drawMainScreen();
-
+    if (gps.available())
+    {
+      //Read Fix
+      fix = gps.read();
+    }
+    if (fix.valid.time)
+    {
+      writeTime(fix.dateTime.hours, fix.dateTime.minutes);
+    }
     //Begin scanning for tags
-    nano.startReading();
+    // nano.startReading();
 
     while (STATE == MAIN_SCREEN)
     {
+      //NeoSerial.println("In while");
       //If we havent checked the battery charge in over 10 minutes
-      if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS)
-      {
-        //update new battery check time
-        previousBatteryCheckTime = millis();
+      /* if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS)
+        {
+         //update new battery check time
+         previousBatteryCheckTime = millis();
 
-        //check battery charge
-        battery = getBatteryPercentage();
-
-        // Display current battery charge reading
-        writeCharge(battery);
-      }
-
+         //check battery charge
+         writeCharge(getBatteryPercentage());
+        }
+      */
       //Check time to see if we need to update display screen (if Minute changed)
       if (gps.available())
       {
@@ -131,75 +148,102 @@ void loop() {
         {
           //update with new minute and write the new time to LCD
           previousMinute = fix.dateTime.minutes;
+          adjustTime(fix.dateTime);
+          fix.dateTime.setAMorPM();
           writeTime(fix.dateTime.hours, fix.dateTime.minutes);
         }
       }
 
-
-
-      //Loop checking for high signal from RFID reader
-      if (nano.check() == true) //Check to see if any new data has come in from module
+      //Foor testing without RFID reader, delete later
+      if (firstTime)
       {
+        NeoSerial.println("Setting to detection Screen");
+        STATE = DETECTION_SCREEN;
+        firstTime=0;
+      }
+      //Loop checking for high signal from RFID reader
+      /*if (nano.check() == true) //Check to see if any new data has come in from module
+        {
         byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
 
         //only check if we found a tag, dont care about anything else
         if (responseType == RESPONSE_IS_TAGFOUND)
         {
-          //TODO: This code is untested. See if it actually pulls out the tag ID
-          byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
-          //Print EPC bytes, this is a subsection of bytes from the response/msg array
-          for (byte x = 0 ; x < tagEPCBytes ; x++)
-          {
-            if (nano.msg[31 + x] < 0x10)
-            {
-              myEPC.concat("0"); //Pretty print
-            }
 
-            myEPC.concat(nano.msg[31 + x]);
-            //NeoSerial.print(nano.msg[31 + x], HEX);
-            //myEPC.concat(" ");
-            //NeoSerial.print(F(" "));
-          }
-          for (int i = 0; i < turtlesFound; i++)
-          {
-            if (myEPC.toInt() == tagIDS[i])
-            {
-              turtleAlreadyLogged = 1;
-            }
-          }
-          if (!turtleAlreadyLogged)
-          {
-            STATE = DETECTION_SCREEN;
-            tagIDS[turtlesFound] = myEPC.toInt();
-            turtlesFound++;
-          }
-          turtleAlreadyLogged =0;
+        /* byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
+        //Print EPC bytes, this is a subsection of bytes from the response/msg array
+        int index = 0;
+        for (byte x = 0 ; x < tagEPCBytes ; x++)
+        {
+        if (nano.msg[31 + x] < 0x10)
+        {
+        strcat(myEPC, "0"); //Pretty print
+        index++;
+        }
+
+        myEPC[index] = nano.msg[31 + x];
+        index++;
+        strcat(myEPC, " ");
+        index++;
+        //NeoSerial.print(nano.msg[31 + x], HEX);
+        //myEPC.concat(" ");
+        //NeoSerial.print(F(" "));
+        }
+        myEPC[index]='\0';*/
+
+      for (int i = 0; i < turtlesFound; i++)
+      {
+        NeoSerial.println(strcmp(myEPC, tagIDS[i]));
+        NeoSerial.println(myEPC);
+        NeoSerial.println(tagIDS[i]);
+        if (!strcmp(myEPC, tagIDS[i]))
+        {
+          turtleAlreadyLogged = 1;
         }
       }
+      if (!turtleAlreadyLogged)
+      {
+        STATE = DETECTION_SCREEN;
+        strcpy(tagIDS[turtlesFound] , myEPC);
+        turtlesFound++;
+      }
+      turtleAlreadyLogged = 0;
 
-    }    //TODO: Design system to guard against repeat detection
-
+    }
   }
+
+  //TODO: Design system to guard against repeat detecti
+
+
+
 
   //code if turtle found
   if (STATE == DETECTION_SCREEN)
   {
+    NeoSerial.println("In detectio state");
     //initilize detection event structure
+    NeoSerial.println("Creating struct");
     detectionEventInfo detectionEvent;
-    char dateString[50];
-
-
+    char timeStamp[25];
+    char dateString[25];
+    //String myEPC = String();
+    NeoSerial.println("Creating string");
+    char myEPC[50] = "";
+    NeoSerial.println("Turn LED RED");
     //LED = Red
     displayRed();
 
     //TODO: Implement sounding buzzer
 
+    NeoSerial.println("Turn LED RED");
 
 
     //set tag ID into struct
-    detectionEvent.tagID = tagIDS[turtlesFound-1];
+    strcpy(detectionEvent.tagID , tagIDS[turtlesFound - 1]);
+    sprintf(myEPC, "ID: %s", detectionEvent.tagID);
 
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
+    //NeoSerial.println("waiting for GPS");
     while (!gps.available());
     if (gps.available())
     {
@@ -208,8 +252,8 @@ void loop() {
       //If location vaild
       if (fix.valid.location)
       {
-        detectionEvent.latitude = fix.latitudeL();
-        detectionEvent.longitude = fix.longitudeL();
+        detectionEvent.latitude = (fix.latitudeL()) / (10000000.0);
+        detectionEvent.longitude = (fix.longitudeL()) / (10000000.0);
       }
       if (fix.valid.time && fix.valid.date)
       {
@@ -219,22 +263,32 @@ void loop() {
         fix.dateTime.setAMorPM();
 
         //Format date string and save
-        sprintf(dateString, "%d:%d:%d %d-%d-%d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds, fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
-
-        detectionEvent.timeStamp = dateString;
+        //dateString = String(fix.dateTime.hours)+":"+String(fix.dateTime.minutes)+":"+String(fix.dateTime.seconds)+" "+String(fix.dateTime.month)+"-"+String(fix.dateTime.date)+"-"+String(fix.dateTime.year);
+        // NeoSerial.println(dateString);
+        sprintf(timeStamp, "%d:%02d:%02d %02d-%02d-%d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds, fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
+        sprintf(detectionEvent.timeS, "%d:%02d:%02d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds);
+        sprintf(detectionEvent.dateS, "%02d-%02d-%d", fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
+        sprintf(dateString, "Time: %s", timeStamp);
       }
     }
 
 
 
     //After data collection, Draw Screen
-    drawDetectionScreen(detectionEvent.tagID, detectionEvent.timeStamp, detectionEvent.longitude, detectionEvent.latitude);
+    NeoSerial.println("before press");
+    if (drawDetectionScreen(myEPC, dateString, detectionEvent.longitude, detectionEvent.latitude))
+    {
+      NeoSerial.println("drew correct");
+    }
 
     //Wait for either Yes or no to log data (check input push buttons)
     while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
     {
+
+      //      NeoSerial.println("in while");
       switch (buttonSelect)
       {
+
         case (BUTTON_LEFT):
           drawYesSelection();
           break;
@@ -247,10 +301,11 @@ void loop() {
     if (optionSelected() == YES_SELECTED)
     {
       //If Yes: Log to SD card
-      if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeStamp, detectionEvent.latitude, detectionEvent.longitude)))
+      if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
       {
         DEBUG_PORT.println("Error logging to SD Card");
       }
+      STATE = MAIN_SCREEN;
     }
     else
     {
@@ -261,4 +316,3 @@ void loop() {
 
   }
 }
-

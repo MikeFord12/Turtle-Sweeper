@@ -42,35 +42,36 @@ void drawCriticalBatteryScreen()
         tft.print("LOW");
 }
 
-void drawDetectionScreen(String ID, String timeStamp, float Long, float Lat)
+int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat)
 {
-        char IDString[20];
-        char timeString[30];
-        char LongString[20];
-        char LatString[20];
+
 
         tft.fillScreen(BLACK);
         setupText(60,5,GREEN,2);
         tft.print("TURTLE DETECTED");
-        tft.drawRect(10,25,300,90,WHITE);
+        tft.drawRect(10,70,300,70,WHITE);
 
-        setupText(15,30,WHITE,2);
-        sprintf(IDString,"ID: %s",ID.c_str());
-        tft.print(IDString);
+        setupText(0,30,WHITE,2);
+        tft.setTextWrap(true);
+        //sprintf(IDString,"ID: %s",ID.c_str());
+        tft.print(ID);
 
-        setupText(15,50,WHITE,2);
-        sprintf(timeString,"Time: %s",timeStamp.c_str());
-        tft.print(timeString);
 
-        setupText(15,70,WHITE,2);
-        sprintf(LongString,"GPS Long: %s",String(Long,7).c_str());
-        tft.print(LongString);
+        //NeoSerial.println(timeStamp.c_str());
+        setupText(15,75,WHITE,2);
+        tft.print(timeStamp);
 
-        setupText(15,90,WHITE,2);
-        sprintf(LatString,"GPS Lat: %s",String(Lat,7).c_str());
-        tft.print(LatString);
+        setupText(15,95,WHITE,2);
+        tft.print("GPS Long: ");
+        setupText(150,95,WHITE,2);
+        tft.print(Long,7);
 
-        setupText(8,150,WHITE,2);
+        setupText(15,115,WHITE,2);
+        tft.print("GPS Lat: ");
+        setupText(150,115,WHITE,2);
+        tft.print(Lat,7);
+
+        setupText(0,150,WHITE,2);
         tft.print("Save this detection event?");
 
         setupText(80, 190, WHITE, 2);
@@ -80,13 +81,15 @@ void drawDetectionScreen(String ID, String timeStamp, float Long, float Lat)
 
         tft.fillTriangle(61, 190, 61, 202, 73, 196, GREEN);
         tft.fillTriangle(188, 190, 188, 202, 200, 196, BLACK);
+
+        return 1;
 }
 
 void writeTime(int hours, int minutes)
 {
         char stringToWrite [7];
         tft.fillRect(1,1,68,23,BLACK);
-        sprintf(stringToWrite,"%d:%d",hours,minutes);
+        sprintf(stringToWrite,"%02d:%02d",hours,minutes);
         setupText(3,5,WHITE,2);
         tft.print(stringToWrite);
 }
