@@ -31,6 +31,7 @@ SoftwareSerial softSerial(12, 13); //RX, TX
 //time tracking variables for updating time and checking batteries
 int previousMinute = 0;
 int previousBatteryCheckTime = 0;
+int buttonPressedTimer = 0;
 
 // variable to keep track of button press
 int buttonSelect = BUTTON_NONE;
@@ -272,8 +273,6 @@ void loop() {
       }
     }
 
-
-
     //After data collection, Draw Screen
     NeoSerial.println("before press");
     if (drawDetectionScreen(myEPC, dateString, detectionEvent.longitude, detectionEvent.latitude))
@@ -281,8 +280,13 @@ void loop() {
       NeoSerial.println("drew correct");
     }
 
+        // Set timer variable for button timeout
+    buttonPressedTimer = millis();
+
     //Wait for either Yes or no to log data (check input push buttons)
-    while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
+    //Timeout after set time of no button pressed
+    while (((buttonSelect = buttonPressed()) != BUTTON_SELECT) && 
+            (millis() - buttonPressedTimer < BUTTON_TIMEOUT))
     {
 
       //      NeoSerial.println("in while");
@@ -298,7 +302,8 @@ void loop() {
       }
     }
 
-    if (optionSelected() == YES_SELECTED)
+    //IF yes is selected and timeout is not met, log data and display on UI
+    if ((optionSelected() == YES_SELECTED) && (millis() - buttonPressedTimer < BUTTON_TIMEOUT))
     {
       //If Yes: Log to SD card
       if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
