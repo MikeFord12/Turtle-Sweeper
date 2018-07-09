@@ -40,5 +40,6 @@ void writeCharge(int charge);
 void drawYesSelection();
 void drawNoSelection();
 int optionSelected();
+void drawErrorScreen(int errorCode);
 
 #endif

@@ -147,3 +147,27 @@ int optionSelected()
         userSelection = YES_SELECTED;
         return temp;
 }
+
+void drawErrorScreen(int errorCode)
+{
+	tft.fillScreen(RED);
+	setupText(20,80,BLACK,3);
+	tft.print("INITIALIZATION FAIL");
+	
+	switch(errorCode)
+	{
+		// SD Initialization failed
+		case 1:
+			setupText(140,130,BLACK,3);
+			tft.print("SD");
+			break;
+		
+		// RFID reader initialization failed
+		case 2:
+			setupText(120,130,BLACK,3);
+			tft.print("RFID");
+			break;
+	}
+	
+	while(1);
+}

@@ -47,7 +47,7 @@ boolean setupNano(long baudRate)
         return (true); //We are ready to rock
 }
 
-void setupCommunication()
+int setupCommunication()
 {
         NeoSerial.begin(115200);
         while (!NeoSerial); //Wait for the serial port to come online
@@ -55,11 +55,13 @@ void setupCommunication()
         if (setupNano(38400) == false) //Configure nano to run at 38400bps
         {
                 NeoSerial.println(F("Module failed to respond. Please check wiring."));
-                while (1); //Freeze!
+                return 2;
         }
 
         nano.setRegion(REGION_NORTHAMERICA); //Set to North America
 
         nano.setReadPower(500); //5.00 dBm. Higher values may caues USB port to brown out
         //Max Read TX Power is 27.00 dBm and may cause temperature-limit throttling
+		
+		return 0;
 }

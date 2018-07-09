@@ -8,7 +8,7 @@
  * Initializes SD card communication and data file.
  *
  * Return: 1: if SD card is present and file created successfully
- *         0: If either SD card is not present or file not created successfully
+ *         0: SD card cannot intialize properly
  */
 int initializeSDCard()
 {
@@ -17,7 +17,7 @@ int initializeSDCard()
         if (!SD.begin(SD_CARD_SLAVE_SELECT_PIN))
         {
                 NeoSerial.println("initialization failed!");
-                while (1);
+                return 1;
         }
         NeoSerial.println("initialization done.");
 
@@ -45,6 +45,8 @@ int initializeSDCard()
         {
                 NeoSerial.println("Data.csv doesn't exist.");
         }
+		
+	return 0;
 }
 
 /**

@@ -12,7 +12,7 @@ extern SoftwareSerial softSerial;
 
 boolean setupNano(long baudRate);
 
-void setupCommunication();
+int setupCommunication();
 
 
 #endif

@@ -53,6 +53,7 @@ void setup() {
   NeoSerial.begin(115200);
   while (!NeoSerial);
 
+  int statusCode = 0;
 
   //Initialize RFID Reader, LCD, GPS, LEDS
   //TODO: add initialization error checking
@@ -62,11 +63,19 @@ void setup() {
   NeoSerial.println("GPS initalized");
   setupLCD();
   NeoSerial.println("LCD initalized");
-  //setupCommunication();
+  
+  if(statusCode = setupCommunication())
+  {
+    drawErrorScreen(statusCode);
+  }
   NeoSerial.println("RFID initalized");
   setupPushButtons();
   NeoSerial.println("Buttons initalized");
-  initializeSDCard();
+  
+  if(statusCode = initializeSDCard())
+  {
+    drawErrorScreen(statusCode);
+  }
   NeoSerial.println("SD initalized");
 
   //TODO: Maybe modify or think through logic a little more
