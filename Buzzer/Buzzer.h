@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#define BUZZER_PIN 42
+#define BUZZER_PIN 8
 
 #define FREQ 1000
 #define DURATION 500
@@ -11,5 +11,7 @@
 void setupBuzzer();
 
 void soundBuzzer();
+
+void soundKimPossibleTheme();
 
 #endif
