@@ -60,8 +60,8 @@ int setupCommunication()
 
         nano.setRegion(REGION_NORTHAMERICA); //Set to North America
 
-        nano.setReadPower(500); //5.00 dBm. Higher values may caues USB port to brown out
+        nano.setReadPower(2500); //5.00 dBm. Higher values may caues USB port to brown out
         //Max Read TX Power is 27.00 dBm and may cause temperature-limit throttling
-		
-		return 0;
+
+        return 0;
 }
