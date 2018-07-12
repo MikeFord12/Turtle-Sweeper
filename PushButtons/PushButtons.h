@@ -5,9 +5,9 @@
 #include <string.h>
 
 // PushButton Pins
-#define LEFT_BUTTON_PIN 30
+#define LEFT_BUTTON_PIN 34
 #define RIGHT_BUTTON_PIN 32
-#define SELECT_BUTTON_PIN 34
+#define SELECT_BUTTON_PIN 36
 
 #define BUTTON_NONE 0
 #define BUTTON_LEFT 1
