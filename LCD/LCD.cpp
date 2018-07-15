@@ -3,31 +3,35 @@
 extern Adafruit_ILI9341 tft;
 int userSelection;
 
-void drawMainScreen()
+void drawMainScreen(int turtlesFound)
 {
-        tft.fillScreen(BLACK);
-        tft.drawRect(0,0,70,25,WHITE);
-        setupText(3,5,WHITE,2);
-        tft.print("HH:MM");
-        tft.drawRect(220,0,100,25,WHITE);
-        setupText(245,5,WHITE,2);
+        /*  tft.fillScreen(WHITE);
+           tft.drawRect(0,0,70,25,BLACK);
+           setupText(3,5,WHITE,2);
+           tft.print("HH:MM");*/
+        tft.drawRect(220,0,100,25,BLACK);
+        setupText(245,5,BLACK,2);
         tft.print("XX%");
-        setupText(90,80,GREEN,3);
+        setupText(90,80,BLACK,3);
         tft.print("Scanning");
-        setupText(140,110,GREEN,3);
+        setupText(140,110,BLACK,3);
         tft.print("in");
-        setupText(90,140,GREEN,3);
+        setupText(90,140,BLACK,3);
         tft.print("Progress");
+        setupText(3,5,BLACK,2);
+        tft.print("Turtles Found: ");
+        setupText(163,5,BLACK,2);
+        tft.print(turtlesFound);
 }
 
 void drawInitializationScreen()
 {
-        tft.fillScreen(BLACK);
-        setupText(90,80,GREEN,3);
+        tft.fillScreen(WHITE);
+        setupText(90,80,BLACK,3);
         tft.print("Waiting");
-        setupText(140,110,GREEN,3);
+        setupText(140,110,BLACK,3);
         tft.print("for");
-        setupText(90,140,GREEN,3);
+        setupText(90,140,BLACK,3);
         tft.print("GPS Fix");
 }
 
@@ -46,41 +50,41 @@ int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat)
 {
 
 
-        tft.fillScreen(BLACK);
-        setupText(60,5,GREEN,2);
+        tft.fillScreen(WHITE);
+        setupText(60,5,BLACK,2);
         tft.print("TURTLE DETECTED");
         tft.drawRect(10,70,300,70,WHITE);
 
-        setupText(0,30,WHITE,2);
+        setupText(0,30,BLACK,2);
         tft.setTextWrap(true);
         //sprintf(IDString,"ID: %s",ID.c_str());
         tft.print(ID);
 
 
         //NeoSerial.println(timeStamp.c_str());
-        setupText(15,75,WHITE,2);
+        setupText(15,75,BLACK,2);
         tft.print(timeStamp);
 
         setupText(15,95,WHITE,2);
         tft.print("GPS Long: ");
-        setupText(150,95,WHITE,2);
+        setupText(150,95,BLACK,2);
         tft.print(Long,7);
 
-        setupText(15,115,WHITE,2);
+        setupText(15,115,BLACK,2);
         tft.print("GPS Lat: ");
-        setupText(150,115,WHITE,2);
+        setupText(150,115,BLACK,2);
         tft.print(Lat,7);
 
         setupText(0,150,WHITE,2);
         tft.print("Save this detection event?");
 
-        setupText(80, 190, WHITE, 2);
+        setupText(80, 190, BLACK, 2);
         tft.print("Yes");
-        setupText(208, 190, WHITE, 2);
+        setupText(208, 190, BLACK, 2);
         tft.print("No");
 
-        tft.fillTriangle(61, 190, 61, 202, 73, 196, GREEN);
-        tft.fillTriangle(188, 190, 188, 202, 200, 196, BLACK);
+        tft.fillTriangle(61, 190, 61, 202, 73, 196, BLACK);
+        tft.fillTriangle(188, 190, 188, 202, 200, 196, WHITE);
 
         return 1;
 }
@@ -115,7 +119,7 @@ void writeCharge(int charge)
 void setupLCD()
 {
         tft.begin();
-        tft.setRotation(3);
+        tft.setRotation(1);
         userSelection = YES_SELECTED;
 }
 
@@ -129,15 +133,15 @@ void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize
 
 void drawYesSelection()
 {
-        tft.fillTriangle(61, 190, 61, 202, 73, 196, GREEN);
-        tft.fillTriangle(188, 190, 188, 202, 200, 196, BLACK);
+        tft.fillTriangle(61, 190, 61, 202, 73, 196, BLACK);
+        tft.fillTriangle(188, 190, 188, 202, 200, 196, WHITE);
         userSelection = YES_SELECTED;
 }
 
 void drawNoSelection()
 {
-        tft.fillTriangle(61, 190, 61, 202, 73, 196, BLACK);
-        tft.fillTriangle(188, 190, 188, 202, 200, 196, GREEN);
+        tft.fillTriangle(61, 190, 61, 202, 73, 196, WHITE);
+        tft.fillTriangle(188, 190, 188, 202, 200, 196, BLACK);
         userSelection = NO_SELECTED;
 }
 
@@ -150,24 +154,31 @@ int optionSelected()
 
 void drawErrorScreen(int errorCode)
 {
-	tft.fillScreen(RED);
-	setupText(20,80,BLACK,3);
-	tft.print("INITIALIZATION FAIL");
-	
-	switch(errorCode)
-	{
-		// SD Initialization failed
-		case 1:
-			setupText(140,130,BLACK,3);
-			tft.print("SD");
-			break;
-		
-		// RFID reader initialization failed
-		case 2:
-			setupText(120,130,BLACK,3);
-			tft.print("RFID");
-			break;
-	}
-	
-	while(1);
+        tft.fillScreen(RED);
+        setupText(20,80,BLACK,2);
+        tft.print("INITIALIZATION FAIL");
+
+        switch(errorCode)
+        {
+        // SD Initialization failed
+        case 1:
+                setupText(140,130,BLACK,3);
+                tft.print("SD");
+                break;
+
+        // RFID reader initialization failed
+        case 2:
+                setupText(120,130,BLACK,3);
+                tft.print("RFID");
+                break;
+
+
+        // RFID reader initialization failed
+        case 3:
+                setupText(120,130,BLACK,3);
+                tft.print("GPS");
+                break;
+        }
+
+        while(1);
 }

@@ -45,8 +45,8 @@ int initializeSDCard()
         {
                 NeoSerial.println("Data.csv doesn't exist.");
         }
-		
-	return 0;
+
+        return 0;
 }
 
 /**
@@ -61,23 +61,44 @@ int initializeSDCard()
  * Return: 1: if data written successfully
  *         0: if data not logged successfully
  */
-int logDetectionEvent(char idNum[], char timeS[], char dateS[], float Lat, float Long)
+int logDetectionEvent(char idNum[], char timeS[], char dateS[], long Lat, long Long)
 {
+
         File detectionData;
         // make a string for assembling the data to log:
-        char dataString[100];
-        char longStr[11];
-        char latStr[11];
-        dtostrf(Lat,10,7,latStr);
-        dtostrf(Long,10,7,longStr);
-        //  NeoSerial.print(Lat,7);
-        //NeoSerial.print(Long,7);
-        // convert to CSV
-        //NeoSerial.printf("%07f  %07f\n",Lat,Long );
-        //  dataString = idNum + "," + timeStamp + "," + String(Lat,7) + "," + String(Long,7);
+        int make_room_at_lat = 2;
+        int make_room_at_long = 3;
+        int room_to_make = 1;
+        char dataString[120];
+        char longStr[15];
+        char latStr[15];
+        //  NeoSerial.print("Lat: ");
+        //    NeoSerial.println(Lat);
+        //  NeoSerial.print("Long: ");
+        //  NeoSerial.println(Long);
+
+        ltoa(Lat,latStr,10);
+        ltoa(Long,longStr,10);
+
+        memmove(
+                longStr + make_room_at_long + room_to_make,
+                longStr + make_room_at_long,
+                15 - (make_room_at_long + room_to_make)
+                );
+        longStr[make_room_at_long] = '.';
+
+
+        memmove(
+                latStr + make_room_at_lat + room_to_make,
+                latStr + make_room_at_lat,
+                15 - (make_room_at_lat + room_to_make)
+                );
+        latStr[make_room_at_lat] = '.';
+
+
+
         sprintf(dataString,"%s,%s,%s,%s,%s",idNum,dateS,timeS,latStr,longStr);
-        //dataString = String(idNum)+","+String(timeStamp);
-        NeoSerial.println(dataString);
+
         //open file
         detectionData = SD.open("Data.csv", FILE_WRITE);
         if (detectionData)

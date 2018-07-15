@@ -21,7 +21,8 @@
 //GPS object and fix object
 NMEAGPS gps;
 gps_fix fix;
-char tagIDS[50][50];
+//log of turtles found
+char tagIDS[20][50];
 int turtlesFound = 0;
 
 //RFID object
@@ -31,18 +32,18 @@ SoftwareSerial softSerial(12, 13); //RX, TX
 //time tracking variables for updating time and checking batteries
 int previousMinute = 0;
 int previousBatteryCheckTime = 0;
-int buttonPressedTimer = 0;
 
-// variable to keep track of button press
+// variable to keep track of which button press
 int buttonSelect = BUTTON_NONE;
 
 // current voltage
 double voltage;
 
 //Program state variable
+//STATE can be GPS_FIX, MAIN_SCREEN, or DETECTION_SCREEN 
 int STATE;
 
-//display variable
+//display object
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
 //Data file object
@@ -88,9 +89,6 @@ void setup() {
     while (1);
   }
 
-
-
-  //initialize state to main screen
   STATE = GPSFIX_SCREEN;
 
   //Stay in while until we get a valid GPS fix
@@ -116,28 +114,33 @@ void loop() {
   //code if system is in main state
   if (STATE == MAIN_SCREEN)
   {
-    char myEPC[50] = "45-67-766-456-88";
+
     //LED = Green and display main screen
     int turtleAlreadyLogged = 0;
     displayGreen();
-    drawMainScreen();
-    if (gps.available())
-    {
-      //Read Fix
-      fix = gps.read();
-    }
-    if (fix.valid.time)
-    {
-      writeTime(fix.dateTime.hours, fix.dateTime.minutes);
-      adjustTime(fix.dateTime);
-      fix.dateTime.setAMorPM();
-    }
+    drawMainScreen(turtlesFound);
+
+    /*  if (gps.available())
+      {
+        //Read Fix
+        fix = gps.read();
+      }
+      if (fix.valid.time)
+      {
+        writeTime(fix.dateTime.hours, fix.dateTime.minutes);
+        adjustTime(fix.dateTime);
+        fix.dateTime.setAMorPM();
+      }
+    */
+
+    // writeCharge(getBatteryPercentage());
     //Begin scanning for tags
     nano.startReading();
 
     while (STATE == MAIN_SCREEN)
     {
-      //NeoSerial.println("In while");
+      char myEPC[50] = "";
+
       //If we havent checked the battery charge in over 10 minutes
       if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS)
       {
@@ -150,8 +153,8 @@ void loop() {
 
 
       //Check time to see if we need to update display screen (if Minute changed)
-      if (gps.available())
-      {
+      /*if (gps.available())
+        {
         //Read Fix
         fix = gps.read();
         //If the minute has changed since last read
@@ -161,18 +164,27 @@ void loop() {
           previousMinute = fix.dateTime.minutes;
           adjustTime(fix.dateTime);
           fix.dateTime.setAMorPM();
+
           writeTime(fix.dateTime.hours, fix.dateTime.minutes);
         }
-      }
+        }*/
 
       //Loop checking for high signal from RFID reader
       if (nano.check() == true) //Check to see if any new data has come in from module
       {
+
         byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
 
+        /*if (responseType == RESPONSE_IS_KEEPALIVE)
+          {
+          NeoSerial.println(F("Scanning"));
+          }*/
         //only check if we found a tag, dont care about anything else
         if (responseType == RESPONSE_IS_TAGFOUND)
         {
+          soundBuzzer();
+          // NeoSerial.print("My EPC before loading: ");
+          //NeoSerial.println(myEPC);
 
           byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
           //Print EPC bytes, this is a subsection of bytes from the response/msg array
@@ -190,14 +202,11 @@ void loop() {
             strcat(myEPC, arrayByte);
 
             strcat(myEPC, " ");
-
           }
+          NeoSerial.println(myEPC);
 
           for (int i = 0; i < turtlesFound; i++)
           {
-            // NeoSerial.println(strcmp(myEPC, tagIDS[i]));
-            // NeoSerial.println(myEPC);
-            // NeoSerial.println(tagIDS[i]);
             if (!strcmp(myEPC, tagIDS[i]))
             {
               turtleAlreadyLogged = 1;
@@ -214,13 +223,17 @@ void loop() {
 
         }
       }
+      /*else if (responseType == ERROR_CORRUPT_RESPONSE)
+        {
+        NeoSerial.println("Bad CRC");
+        }
+        else
+        {
+        //Unknown response
+        NeoSerial.print("Unknown error");
+        }*/
     }
   }
-
-  //TODO: Design system to guard against repeat detecti
-
-
-
 
   //code if turtle found
   if (STATE == DETECTION_SCREEN)
@@ -229,6 +242,8 @@ void loop() {
     detectionEventInfo detectionEvent;
     char timeStamp[25];
     char dateString[25];
+    float detectionScreenLong = 0;
+    float detectionScreenLat = 0;
 
     char epcFound[50] = "";
 
@@ -236,7 +251,7 @@ void loop() {
     displayRed();
 
     //TODO: Implement sounding buzzer
-    //soundBuzzer();
+    soundBuzzer();
 
     //set tag ID into struct
     strcpy(detectionEvent.tagID , tagIDS[turtlesFound - 1]);
@@ -245,47 +260,52 @@ void loop() {
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
     //NeoSerial.println("waiting for GPS");
     while (!gps.available());
-    if (gps.available())
+
+    while (!fix.valid.location || !fix.valid.time || !fix.valid.date)
     {
-      //Read Fix
-      fix = gps.read();
-      //If location vaild
-      if (fix.valid.location)
+      if (gps.available())
       {
-        detectionEvent.latitude = (fix.latitudeL()) / (10000000.0);
-        detectionEvent.longitude = (fix.longitudeL()) / (10000000.0);
+        //Read Fix
+        fix = gps.read();
       }
-      if (fix.valid.time && fix.valid.date)
-      {
-        //Adjust time to EST
-        adjustTime(fix.dateTime);
-        //Convert from military time to conventional
-        fix.dateTime.setAMorPM();
+    }
+    //If location vaild
+    if (fix.valid.location)
+    {
+      detectionEvent.latitude = fix.latitudeL();
+      detectionEvent.longitude = fix.longitudeL();
+   
+      detectionScreenLong = (detectionEvent.longitude) / (10000000.00);
+      detectionScreenLat = (detectionEvent.latitude) / (10000000.00);
+    }
+    else
+    {
+      NeoSerial.println("Fix not valid");
+    }
+    if (fix.valid.time && fix.valid.date)
+    {
+      //Adjust time to EST
+      adjustTime(fix.dateTime);
+      //Convert from military time to conventional
+      fix.dateTime.setAMorPM();
 
-        //Format date string and save
+      //Format date string and save
 
-        sprintf(timeStamp, "%d:%02d:%02d %02d-%02d-%d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds, fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
-        sprintf(detectionEvent.timeS, "%d:%02d:%02d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds);
-        sprintf(detectionEvent.dateS, "%02d-%02d-%d", fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
-        sprintf(dateString, "Time: %s", timeStamp);
-      }
+      sprintf(timeStamp, "%d:%02d:%02d %02d-%02d-%d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds, fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
+      sprintf(detectionEvent.timeS, "%d:%02d:%02d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds);
+      sprintf(detectionEvent.dateS, "%02d-%02d-%d", fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
+      sprintf(dateString, "Time: %s", timeStamp);
     }
 
     //After data collection, Draw Screen
-    drawDetectionScreen(epcFound, dateString, detectionEvent.longitude, detectionEvent.latitude);
-
-    // Set timer variable for button timeout
-    //buttonPressedTimer = millis();
+    drawDetectionScreen(epcFound, dateString, detectionScreenLong, detectionScreenLat);
 
     //Wait for either Yes or no to log data (check input push buttons)
     //Timeout after set time of no button pressed
-    while (((buttonSelect = buttonPressed()) != BUTTON_SELECT)) //&&
-      //(millis() - buttonPressedTimer < BUTTON_TIMEOUT))
+    while (((buttonSelect = buttonPressed()) != BUTTON_SELECT))
     {
-
       switch (buttonSelect)
       {
-
         case (BUTTON_LEFT):
           drawYesSelection();
           break;
@@ -296,7 +316,7 @@ void loop() {
     }
 
     //IF yes is selected and timeout is not met, log data and display on UI
-    if ((optionSelected() == YES_SELECTED))// && (millis() - buttonPressedTimer < BUTTON_TIMEOUT))
+    if ((optionSelected() == YES_SELECTED))
     {
       //If Yes: Log to SD card
       if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
@@ -310,7 +330,5 @@ void loop() {
       //If No: Go back to MAIN_SCREEN state
       STATE = MAIN_SCREEN;
     }
-
-
   }
 }

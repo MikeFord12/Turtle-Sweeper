@@ -5,7 +5,7 @@
 
 #define BUZZER_PIN 8
 
-#define FREQ 1000
+#define FREQ 10000
 #define DURATION 500
 
 void setupBuzzer();

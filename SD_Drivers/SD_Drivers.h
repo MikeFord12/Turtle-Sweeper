@@ -15,15 +15,15 @@ struct detectionEventInfo
         char tagID[50];
         char timeS[20];
         char dateS[20];
-        float latitude;
-        float longitude;
+        long latitude;
+        long longitude;
 };
 
 //Sets up SD card communication and data file
 int initializeSDCard();
 
 //Constructs string and logs data based on parameters passed in
-int logDetectionEvent(char idNum[], char timeS[], char dateS[], float Lat, float Long);
+int logDetectionEvent(char idNum[], char timeS[], char dateS[], long Lat, long Long);
 
 
 //File object for data file
