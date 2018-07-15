@@ -50,13 +50,13 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 File myFile;
 
 void setup() {
+  //Serial port to print out debug messages
   NeoSerial.begin(115200);
   while (!NeoSerial);
 
   int statusCode = 0;
 
   //Initialize RFID Reader, LCD, GPS, LEDS
-  //TODO: add initialization error checking
   setupLEDS();
   NeoSerial.println("LEDS initalized");
   setupGPS();
@@ -69,7 +69,10 @@ void setup() {
     drawErrorScreen(statusCode);
     while (1);
   }
+  else
+  {
   NeoSerial.println("RFID initalized");
+  }
   setupPushButtons();
   NeoSerial.println("Buttons initalized");
   setupBuzzer();
@@ -80,8 +83,10 @@ void setup() {
     drawErrorScreen(statusCode);
     while (1);
   }
+  else
+  {
   NeoSerial.println("SD initalized");
-
+  }
   //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
   if (getBatteryPercentage() <= 15)
   {
@@ -133,7 +138,7 @@ void loop() {
       }
     */
 
-    // writeCharge(getBatteryPercentage());
+
     //Begin scanning for tags
     nano.startReading();
 
@@ -250,7 +255,6 @@ void loop() {
     //Turn LED RED
     displayRed();
 
-    //TODO: Implement sounding buzzer
     soundBuzzer();
 
     //set tag ID into struct
@@ -259,6 +263,7 @@ void loop() {
 
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
     //NeoSerial.println("waiting for GPS");
+    drawWaitForGPSScreen();
     while (!gps.available());
 
     while (!fix.valid.location || !fix.valid.time || !fix.valid.date)

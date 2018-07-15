@@ -35,6 +35,17 @@ void drawInitializationScreen()
         tft.print("GPS Fix");
 }
 
+void gatheringGPSScreen()
+{
+        tft.fillScreen(WHITE);
+        setupText(30,80,BLACK,3);
+        tft.print("Turtle Found");
+        setupText(60,110,BLACK,3);
+        tft.print("Gathering");
+        setupText(60,140,BLACK,3);
+        tft.print("GPS Data");
+}
+
 void drawCriticalBatteryScreen()
 {
         tft.fillScreen(RED);

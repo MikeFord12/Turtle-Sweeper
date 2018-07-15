@@ -41,5 +41,6 @@ void drawYesSelection();
 void drawNoSelection();
 int optionSelected();
 void drawErrorScreen(int errorCode);
+void gatheringGPSScreen();
 
 #endif
