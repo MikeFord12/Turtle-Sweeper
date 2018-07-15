@@ -12,7 +12,7 @@ The UI was designed using modules compatible with the Arduino microcontroller to
 
 # Setup
 
-If anyone desires to clone and run this code, the included libraries must be present in the user’s Arduino IDE. The Arduino IDE used for development is Version 1.8.5. The SD, SoftwareSerial, Wire, and SPI libraries used are included in the Arduino IDE. The external libraries used are included in the Github repo. 
+If anyone desires to clone and run this code, the included libraries must be present in the user’s Arduino IDE. The Arduino IDE used for development is Version 1.8.5. The SD, SoftwareSerial, and SPI libraries used are included in the Arduino IDE. The external libraries used are included in the Github repo. 
 
 ---------------------------------------------------------------------
 **In order for these to work you must put these library folders in your “arduino->libraries” directory. If there is no libraries folder in your arduino directory, you must create one and put the library folders inside of there.**
