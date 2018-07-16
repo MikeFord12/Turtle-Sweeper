@@ -36,34 +36,36 @@ int convertVrefToPercentage(long vref)
 {
 								switch(vref)
 								{
-								case 0 ... 4295: // >>> Above is red
+								// >>> Above is red
+								case 0 ... 4295: 	// 6.0v and below
 																return 10;
 
-								case 4296 ... 4387:
+								case 4296 ... 4387:	// 6.1v
 																return 15;
 
-								case 4388 ... 4484:
+								case 4388 ... 4484:	// 6.2v
 																return 20;
 
-								case 4485 ... 4584:
+								case 4485 ... 4584:	// 6.3v
 																return 25;
 
-								case 4585 ... 4677: // >>> Above is yellow
+								// >>> Above is yellow
+								case 4585 ... 4677:	// 6.4v
 																return 30;
 
-								case 4678 ... 4777:
+								case 4678 ... 4777:	// 6.5v
 																return 35;
 
-								case 4778 ... 4880:
+								case 4778 ... 4880:	// 6.6v
 																return 40;
 
-								case 4881 ... 4988:
+								case 4881 ... 4988:	// 6.7v
 																return 45;
 
-								case 4989 ... 5010:
+								case 4989 ... 5010:	// 6.8v
 																return 50;
-
-								case 5011 ... LONG_MAX: // >>> Above is green, return 100
+								// >>> Above is green, return 100
+								case 5011 ... LONG_MAX: // 6.9v and above
 																return 100;
 
 								default:
