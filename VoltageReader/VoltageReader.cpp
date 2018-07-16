@@ -60,10 +60,10 @@ int convertVrefToPercentage(long vref)
 								case 4881 ... 4988:
 																return 45;
 
-								case 4989 ... 5046:
+								case 4989 ... 5010:
 																return 50;
 
-								case 5047 ... LONG_MAX: // >>> Above is green, return 100
+								case 5011 ... LONG_MAX: // >>> Above is green, return 100
 																return 100;
 
 								default:

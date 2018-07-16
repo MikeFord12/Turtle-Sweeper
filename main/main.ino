@@ -31,7 +31,7 @@ SoftwareSerial softSerial(12, 13); //RX, TX
 
 //time tracking variables for updating time and checking batteries
 int previousMinute = 0;
-int previousBatteryCheckTime = 0;
+unsigned long previousBatteryCheckTime = 0;
 
 // variable to keep track of which button press
 int buttonSelect = BUTTON_NONE;
@@ -40,7 +40,7 @@ int buttonSelect = BUTTON_NONE;
 double voltage;
 
 //Program state variable
-//STATE can be GPS_FIX, MAIN_SCREEN, or DETECTION_SCREEN 
+//STATE can be GPS_FIX, MAIN_SCREEN, or DETECTION_SCREEN
 int STATE;
 
 //display object
@@ -64,15 +64,15 @@ void setup() {
   setupLCD();
   NeoSerial.println("LCD initalized");
 
-  if (statusCode = setupCommunication())
+ /* if (statusCode = setupCommunication())
   {
     drawErrorScreen(statusCode);
     while (1);
   }
   else
   {
-  NeoSerial.println("RFID initalized");
-  }
+    NeoSerial.println("RFID initalized");
+  }*/
   setupPushButtons();
   NeoSerial.println("Buttons initalized");
   setupBuzzer();
@@ -85,7 +85,7 @@ void setup() {
   }
   else
   {
-  NeoSerial.println("SD initalized");
+    NeoSerial.println("SD initalized");
   }
   //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
   if (getBatteryPercentage() <= 15)
@@ -94,10 +94,10 @@ void setup() {
     while (1);
   }
 
-  STATE = GPSFIX_SCREEN;
+  STATE = MAIN_SCREEN;
 
   //Stay in while until we get a valid GPS fix
-  drawInitializationScreen();
+ /* drawInitializationScreen();
   while (STATE == GPSFIX_SCREEN)
   {
     if (gps.available())
@@ -110,7 +110,7 @@ void setup() {
         STATE = MAIN_SCREEN;
       }
     }
-  }
+  }*/
 }
 
 void loop() {
@@ -124,6 +124,7 @@ void loop() {
     int turtleAlreadyLogged = 0;
     displayGreen();
     drawMainScreen(turtlesFound);
+    writeCharge(getBatteryPercentage());
 
     /*  if (gps.available())
       {
@@ -140,19 +141,20 @@ void loop() {
 
 
     //Begin scanning for tags
-    nano.startReading();
+   // nano.startReading();
 
     while (STATE == MAIN_SCREEN)
     {
       char myEPC[50] = "";
 
       //If we havent checked the battery charge in over 10 minutes
-      if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS)
+      if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS/20)
       {
         //update new battery check time
         previousBatteryCheckTime = millis();
 
         //check battery charge
+ 
         writeCharge(getBatteryPercentage());
       }
 
@@ -175,7 +177,7 @@ void loop() {
         }*/
 
       //Loop checking for high signal from RFID reader
-      if (nano.check() == true) //Check to see if any new data has come in from module
+     /* if (nano.check() == true) //Check to see if any new data has come in from module
       {
 
         byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
@@ -185,7 +187,7 @@ void loop() {
           NeoSerial.println(F("Scanning"));
           }*/
         //only check if we found a tag, dont care about anything else
-        if (responseType == RESPONSE_IS_TAGFOUND)
+      /*  if (responseType == RESPONSE_IS_TAGFOUND)
         {
           soundBuzzer();
           // NeoSerial.print("My EPC before loading: ");
@@ -263,7 +265,7 @@ void loop() {
 
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
     //NeoSerial.println("waiting for GPS");
-    drawWaitForGPSScreen();
+    gatheringGPSScreen();
     while (!gps.available());
 
     while (!fix.valid.location || !fix.valid.time || !fix.valid.date)
@@ -279,7 +281,7 @@ void loop() {
     {
       detectionEvent.latitude = fix.latitudeL();
       detectionEvent.longitude = fix.longitudeL();
-   
+
       detectionScreenLong = (detectionEvent.longitude) / (10000000.00);
       detectionScreenLat = (detectionEvent.latitude) / (10000000.00);
     }

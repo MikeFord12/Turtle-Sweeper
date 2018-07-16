@@ -9,6 +9,7 @@ void drawMainScreen(int turtlesFound)
            tft.drawRect(0,0,70,25,BLACK);
            setupText(3,5,WHITE,2);
            tft.print("HH:MM");*/
+        tft.fillScreen(WHITE);
         tft.drawRect(220,0,100,25,BLACK);
         setupText(245,5,BLACK,2);
         tft.print("XX%");
@@ -125,6 +126,7 @@ void writeCharge(int charge)
                 //  setupText(250,5,WHITE,2);
                 tft.print(stringToWrite);
         }
+
 }
 
 void setupLCD()
