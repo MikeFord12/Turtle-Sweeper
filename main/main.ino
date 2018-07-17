@@ -24,14 +24,19 @@ gps_fix fix;
 //log of turtles found
 char tagIDS[20][50];
 int turtlesFound = 0;
-
 //RFID object
 RFID nano;
 SoftwareSerial softSerial(12, 13); //RX, TX
 
 //time tracking variables for updating time and checking batteries
-int previousMinute = 0;
 unsigned long previousBatteryCheckTime = 0;
+
+//Timout for waiting for GPS fix
+unsigned long GPS_FIX_TIMEOUT = 0;
+
+//Variables for GPS and SD initialization
+int SD_INITIALIZED_CORRECTLY = 1;
+int GPS_INITIALIZED_CORRECTLY = 1;
 
 // variable to keep track of which button press
 int buttonSelect = BUTTON_NONE;
@@ -56,7 +61,7 @@ void setup() {
 
   int statusCode = 0;
 
-  //Initialize RFID Reader, LCD, GPS, LEDS
+  //Initialize RFID Reader, LCD, GPS, LEDS, pushbuttons, buzzer, SD
   setupLEDS();
   NeoSerial.println("LEDS initalized");
   setupGPS();
@@ -64,7 +69,7 @@ void setup() {
   setupLCD();
   NeoSerial.println("LCD initalized");
 
- /* if (statusCode = setupCommunication())
+  if (statusCode = setupCommunication())
   {
     drawErrorScreen(statusCode);
     while (1);
@@ -72,7 +77,7 @@ void setup() {
   else
   {
     NeoSerial.println("RFID initalized");
-  }*/
+  }
   setupPushButtons();
   NeoSerial.println("Buttons initalized");
   setupBuzzer();
@@ -80,8 +85,10 @@ void setup() {
 
   if (statusCode = initializeSDCard())
   {
+    //If SD is not initialized correctly
+    SD_INITIALIZED_CORRECTLY = 0;
     drawErrorScreen(statusCode);
-    while (1);
+    delay(1000);
   }
   else
   {
@@ -94,10 +101,11 @@ void setup() {
     while (1);
   }
 
-  STATE = MAIN_SCREEN;
+  STATE = GPSFIX_SCREEN;
 
   //Stay in while until we get a valid GPS fix
- /* drawInitializationScreen();
+  drawInitializationScreen();
+  GPS_FIX_TIMEOUT = millis();
   while (STATE == GPSFIX_SCREEN)
   {
     if (gps.available())
@@ -110,7 +118,14 @@ void setup() {
         STATE = MAIN_SCREEN;
       }
     }
-  }*/
+    //If we have waited 6 minutes and there is still no fix, disable GPS and logging functionality
+    if (millis() - GPS_FIX_TIMEOUT > SIX_MINUTES_IN_MS)
+    {
+      GPS_INITIALIZED_CORRECTLY = 0;
+      STATE = MAIN_SCREEN;
+      break;
+    }
+  }
 }
 
 void loop() {
@@ -119,83 +134,68 @@ void loop() {
   //code if system is in main state
   if (STATE == MAIN_SCREEN)
   {
-
-    //LED = Green and display main screen
+    //reset turtle already logged
     int turtleAlreadyLogged = 0;
+
+    //display green LED and draw main screen
     displayGreen();
-    drawMainScreen(turtlesFound);
+    drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
+    drawTurtlesFound(turtlesFound);
     writeCharge(getBatteryPercentage());
 
-    /*  if (gps.available())
+    //if gps fix is available, read it in
+    if (GPS_INITIALIZED_CORRECTLY)
+    {
+      if (gps.available())
       {
         //Read Fix
         fix = gps.read();
       }
-      if (fix.valid.time)
-      {
-        writeTime(fix.dateTime.hours, fix.dateTime.minutes);
-        adjustTime(fix.dateTime);
-        fix.dateTime.setAMorPM();
-      }
-    */
-
+    }
 
     //Begin scanning for tags
-   // nano.startReading();
+    nano.startReading();
 
+    
     while (STATE == MAIN_SCREEN)
     {
       char myEPC[50] = "";
 
       //If we havent checked the battery charge in over 10 minutes
-      if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS/20)
+      if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS)
       {
         //update new battery check time
         previousBatteryCheckTime = millis();
 
         //check battery charge
- 
         writeCharge(getBatteryPercentage());
       }
 
 
-      //Check time to see if we need to update display screen (if Minute changed)
-      /*if (gps.available())
+      //if gps fix is available, read it in
+      if (GPS_INITIALIZED_CORRECTLY)
+      {
+        if (gps.available())
         {
-        //Read Fix
-        fix = gps.read();
-        //If the minute has changed since last read
-        if (fix.dateTime.minutes != previousMinute && fix.valid.time)
-        {
-          //update with new minute and write the new time to LCD
-          previousMinute = fix.dateTime.minutes;
-          adjustTime(fix.dateTime);
-          fix.dateTime.setAMorPM();
-
-          writeTime(fix.dateTime.hours, fix.dateTime.minutes);
+          //Read Fix
+          fix = gps.read();
         }
-        }*/
+      }
 
       //Loop checking for high signal from RFID reader
-     /* if (nano.check() == true) //Check to see if any new data has come in from module
+      if (nano.check() == true) //Check to see if any new data has come in from module
       {
 
         byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
 
-        /*if (responseType == RESPONSE_IS_KEEPALIVE)
-          {
-          NeoSerial.println(F("Scanning"));
-          }*/
         //only check if we found a tag, dont care about anything else
-      /*  if (responseType == RESPONSE_IS_TAGFOUND)
+        if (responseType == RESPONSE_IS_TAGFOUND)
         {
+          //sound buzzer is tag found
           soundBuzzer();
-          // NeoSerial.print("My EPC before loading: ");
-          //NeoSerial.println(myEPC);
 
           byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
           //Print EPC bytes, this is a subsection of bytes from the response/msg array
-
           for (byte x = 0 ; x < tagEPCBytes ; x++)
           {
             char arrayByte[3];
@@ -204,47 +204,51 @@ void loop() {
             {
               strcat(myEPC, "0"); //Pretty print
             }
-
+            //convert int to char array
             itoa (nano.msg[31 + x], arrayByte, 10);
+            //add it to the end of our ID char array
             strcat(myEPC, arrayByte);
 
             strcat(myEPC, " ");
           }
-          NeoSerial.println(myEPC);
+          //NeoSerial.println(myEPC);
 
+          //See if we already found tag
           for (int i = 0; i < turtlesFound; i++)
           {
             if (!strcmp(myEPC, tagIDS[i]))
             {
+              //if we have, done treat it as a new detection event
               turtleAlreadyLogged = 1;
               break;
             }
           }
+          //If tag found for the first time
           if (!turtleAlreadyLogged)
           {
-            STATE = DETECTION_SCREEN;
+            //If GPS is working, go to detection state
+            //If not, no point in going as we cant get coordinates or timestamp
+            if (GPS_INITIALIZED_CORRECTLY)
+            {
+              STATE = DETECTION_SCREEN;
+            }
+            //add turtle to log
             strcpy(tagIDS[turtlesFound] , myEPC);
+            //update number of turtles found
             turtlesFound++;
+            drawTurtlesFound(turtlesFound);
           }
+          //reset flag
           turtleAlreadyLogged = 0;
-
         }
       }
-      /*else if (responseType == ERROR_CORRUPT_RESPONSE)
-        {
-        NeoSerial.println("Bad CRC");
-        }
-        else
-        {
-        //Unknown response
-        NeoSerial.print("Unknown error");
-        }*/
     }
   }
 
   //code if turtle found
   if (STATE == DETECTION_SCREEN)
   {
+    //NeoSerial.println("Detection state");
     //initilize detection event structure
     detectionEventInfo detectionEvent;
     char timeStamp[25];
@@ -256,7 +260,7 @@ void loop() {
 
     //Turn LED RED
     displayRed();
-
+    //sound buzzer
     soundBuzzer();
 
     //set tag ID into struct
@@ -264,10 +268,12 @@ void loop() {
     sprintf(epcFound, "ID: %s", detectionEvent.tagID);
 
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
-    //NeoSerial.println("waiting for GPS");
     gatheringGPSScreen();
-    while (!gps.available());
 
+    while (!gps.available());
+    fix = gps.read();
+
+    //wait until we have valid data from GPS to save
     while (!fix.valid.location || !fix.valid.time || !fix.valid.date)
     {
       if (gps.available())
@@ -276,6 +282,7 @@ void loop() {
         fix = gps.read();
       }
     }
+
     //If location vaild
     if (fix.valid.location)
     {
@@ -285,10 +292,7 @@ void loop() {
       detectionScreenLong = (detectionEvent.longitude) / (10000000.00);
       detectionScreenLat = (detectionEvent.latitude) / (10000000.00);
     }
-    else
-    {
-      NeoSerial.println("Fix not valid");
-    }
+
     if (fix.valid.time && fix.valid.date)
     {
       //Adjust time to EST
@@ -297,7 +301,6 @@ void loop() {
       fix.dateTime.setAMorPM();
 
       //Format date string and save
-
       sprintf(timeStamp, "%d:%02d:%02d %02d-%02d-%d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds, fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
       sprintf(detectionEvent.timeS, "%d:%02d:%02d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds);
       sprintf(detectionEvent.dateS, "%02d-%02d-%d", fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
@@ -325,10 +328,13 @@ void loop() {
     //IF yes is selected and timeout is not met, log data and display on UI
     if ((optionSelected() == YES_SELECTED))
     {
-      //If Yes: Log to SD card
-      if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
+      //If Yes and SD card initialized correctly: Log to SD card
+      if (SD_INITIALIZED_CORRECTLY)
       {
-        DEBUG_PORT.println("Error logging to SD Card");
+        if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
+        {
+          DEBUG_PORT.println("Error logging to SD Card");
+        }
       }
       STATE = MAIN_SCREEN;
     }

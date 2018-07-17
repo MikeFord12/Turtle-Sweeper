@@ -7,6 +7,7 @@
 #define GPSFIX_SCREEN 3
 
 #define TEN_MINUTES_IN_MS 600000
+#define SIX_MINUTES_IN_MS 360000
 
 
 
