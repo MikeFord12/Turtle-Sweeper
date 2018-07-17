@@ -3,7 +3,7 @@
 extern Adafruit_ILI9341 tft;
 int userSelection;
 
-void drawMainScreen(int turtlesFound)
+void drawMainScreen(int GPS_INITIALIZED, int SD_INITIALIZED)
 {
         /*  tft.fillScreen(WHITE);
            tft.drawRect(0,0,70,25,BLACK);
@@ -19,9 +19,31 @@ void drawMainScreen(int turtlesFound)
         tft.print("in");
         setupText(90,140,BLACK,3);
         tft.print("Progress");
+
+
+        if(!GPS_INITIALIZED && !SD_INITIALIZED)
+        {
+                setupText(90,200,BLACK,2);
+                tft.print("Basic Mode");
+        }
+        else if(!GPS_INITIALIZED)
+        {
+                setupText(90,200,BLACK,2);
+                tft.print("No GPS Mode");
+        }
+        else if(!SD_INITIALIZED)
+        {
+                setupText(90,200,BLACK,2);
+                tft.print("No SD Mode");
+        }
+}
+
+void drawTurtlesFound(int turtlesFound)
+{
+        tft.fillRect(174,4,15,15,WHITE);
         setupText(3,5,BLACK,2);
-        tft.print("Turtles Found: ");
-        setupText(163,5,BLACK,2);
+        tft.print("Turtles Found:");
+        setupText(175,5,BLACK,2);
         tft.print(turtlesFound);
 }
 
@@ -183,6 +205,7 @@ void drawErrorScreen(int errorCode)
         case 2:
                 setupText(120,130,BLACK,3);
                 tft.print("RFID");
+                while(1);
                 break;
 
 
@@ -193,5 +216,5 @@ void drawErrorScreen(int errorCode)
                 break;
         }
 
-        while(1);
+
 }
