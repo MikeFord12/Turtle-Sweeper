@@ -34,7 +34,9 @@ unsigned long previousBatteryCheckTime = 0;
 //Timout for waiting for GPS fix
 unsigned long GPS_FIX_TIMEOUT = 0;
 unsigned long GPS_GATHERING_DATA_TIMEOUT = 0;
+unsigned long TOGGLE_LED_TIMER = 0;
 int GPS_GATHERING_TIMEOUT = 0;
+int LED_TOGGLE = 1;
 
 //Variables for GPS and SD initialization
 int SD_INITIALIZED_CORRECTLY = 1;
@@ -161,6 +163,25 @@ void loop() {
     while (STATE == MAIN_SCREEN)
     {
       char myEPC[50] = "";
+
+      if (LED_TOGGLE)
+      {
+        displayGreen();
+      }
+      else
+      {
+        turnOff();
+      }
+
+      if (millis() - TOGGLE_LED_TIMER >= TWO_SECONDS_IN_MS)
+      {
+        //update new battery check time
+        TOGGLE_LED_TIMER = millis();
+
+        //check battery charge
+        LED_TOGGLE = !LED_TOGGLE;
+      }
+
 
       //If we havent checked the battery charge in over 10 minutes
       if (millis() - previousBatteryCheckTime >= ONE_MINUTE_IN_MS)
@@ -324,7 +345,6 @@ void loop() {
     {
       //After data collection, Draw Screen
       drawDetectionScreen(epcFound, dateString, detectionScreenLong, detectionScreenLat);
-
     }
     else
     {
@@ -365,7 +385,7 @@ void loop() {
           {
             DEBUG_PORT.println("Error logging to SD Card");
           }
-          GPS_GATHERING_TIMEOUT=0;
+          GPS_GATHERING_TIMEOUT = 0;
         }
       }
       STATE = MAIN_SCREEN;
