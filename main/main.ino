@@ -33,6 +33,8 @@ unsigned long previousBatteryCheckTime = 0;
 
 //Timout for waiting for GPS fix
 unsigned long GPS_FIX_TIMEOUT = 0;
+unsigned long GPS_GATHERING_DATA_TIMEOUT = 0;
+int GPS_GATHERING_TIMEOUT = 0;
 
 //Variables for GPS and SD initialization
 int SD_INITIALIZED_CORRECTLY = 1;
@@ -95,7 +97,7 @@ void setup() {
     NeoSerial.println("SD initalized");
   }
   //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
-  if (getBatteryPercentage() <= 15)
+  if (getBatteryPercentage() <= 15)//TODO: CHANGE THIS THRESHOLD
   {
     drawCriticalBatteryScreen();
     while (1);
@@ -123,7 +125,6 @@ void setup() {
     {
       GPS_INITIALIZED_CORRECTLY = 0;
       STATE = MAIN_SCREEN;
-      break;
     }
   }
 }
@@ -156,13 +157,13 @@ void loop() {
     //Begin scanning for tags
     nano.startReading();
 
-    
+
     while (STATE == MAIN_SCREEN)
     {
       char myEPC[50] = "";
 
       //If we havent checked the battery charge in over 10 minutes
-      if (millis() - previousBatteryCheckTime >= TEN_MINUTES_IN_MS)
+      if (millis() - previousBatteryCheckTime >= ONE_MINUTE_IN_MS)
       {
         //update new battery check time
         previousBatteryCheckTime = millis();
@@ -170,6 +171,13 @@ void loop() {
         //check battery charge
         writeCharge(getBatteryPercentage());
       }
+
+      /*if(getBatteryPercentage() <= XX)
+        {
+        nano.stopReading();
+        drawCriticalBatteryScreen();
+        while (1);
+        }*/
 
 
       //if gps fix is available, read it in
@@ -269,7 +277,7 @@ void loop() {
 
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
     gatheringGPSScreen();
-
+    GPS_GATHERING_DATA_TIMEOUT = millis();
     while (!gps.available());
     fix = gps.read();
 
@@ -280,6 +288,11 @@ void loop() {
       {
         //Read Fix
         fix = gps.read();
+      }
+      if ((millis() - GPS_GATHERING_DATA_TIMEOUT) >= THIRTY_SECONDS_IN_MS)
+      {
+        GPS_GATHERING_TIMEOUT = 1;
+        break;
       }
     }
 
@@ -307,8 +320,16 @@ void loop() {
       sprintf(dateString, "Time: %s", timeStamp);
     }
 
-    //After data collection, Draw Screen
-    drawDetectionScreen(epcFound, dateString, detectionScreenLong, detectionScreenLat);
+    if (!GPS_GATHERING_TIMEOUT)
+    {
+      //After data collection, Draw Screen
+      drawDetectionScreen(epcFound, dateString, detectionScreenLong, detectionScreenLat);
+
+    }
+    else
+    {
+      drawDetectionScreen(epcFound, "GPS Data Timout", 00.000, 00.000);
+    }
 
     //Wait for either Yes or no to log data (check input push buttons)
     //Timeout after set time of no button pressed
@@ -331,9 +352,20 @@ void loop() {
       //If Yes and SD card initialized correctly: Log to SD card
       if (SD_INITIALIZED_CORRECTLY)
       {
-        if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
+        if (!GPS_GATHERING_TIMEOUT)
         {
-          DEBUG_PORT.println("Error logging to SD Card");
+          if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
+          {
+            DEBUG_PORT.println("Error logging to SD Card");
+          }
+        }
+        else
+        {
+          if (!(logDetectionEvent(detectionEvent.tagID, "GPS Data Timout", "GPS Data Timout", 1234567, 1234567)))
+          {
+            DEBUG_PORT.println("Error logging to SD Card");
+          }
+          GPS_GATHERING_TIMEOUT=0;
         }
       }
       STATE = MAIN_SCREEN;
