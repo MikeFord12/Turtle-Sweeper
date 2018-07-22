@@ -36,7 +36,6 @@ void drawMainScreen(int noGPS, int noSD);
 void drawTurtlesFound(int turtlesFound);
 void setupLCD();
 void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize);
-void writeTime(int hours, int minutes);
 void writeCharge(int charge);
 void drawYesSelection();
 void drawNoSelection();

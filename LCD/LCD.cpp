@@ -3,12 +3,18 @@
 extern Adafruit_ILI9341 tft;
 int userSelection;
 
+
+/**
+ * Function: drawMainScreen(int GPS_INITIALIZED, int SD_INITIALIZED)
+ *---------------------
+ * Draws main scanning screen
+ *
+ * Parameters: GPS_INITIALIZED - flag from main function if GPS found a fix or not
+ * SD_INITIALIZED - flag from main function if SD card was initlaied correcty
+ * Return: None
+ */
 void drawMainScreen(int GPS_INITIALIZED, int SD_INITIALIZED)
 {
-        /*  tft.fillScreen(WHITE);
-           tft.drawRect(0,0,70,25,BLACK);
-           setupText(3,5,WHITE,2);
-           tft.print("HH:MM");*/
         tft.fillScreen(WHITE);
         tft.drawRect(220,0,100,25,BLACK);
         setupText(245,5,BLACK,2);
@@ -38,6 +44,14 @@ void drawMainScreen(int GPS_INITIALIZED, int SD_INITIALIZED)
         }
 }
 
+/**
+ * Function: drawTurtlesFound(int turtlesFound)
+ *---------------------
+ * Draws number of turtles found so far on main screen
+ *
+ * Parameters: int turtlesFound - number of turtles found
+ * Return: None
+ */
 void drawTurtlesFound(int turtlesFound)
 {
         tft.fillRect(174,4,15,15,WHITE);
@@ -47,6 +61,14 @@ void drawTurtlesFound(int turtlesFound)
         tft.print(turtlesFound);
 }
 
+/**
+ * Function: drawInitializationScreen()
+ *---------------------
+ * Draws waiting for GPS fix screen
+ *
+ * Parameters: None
+ * Return: None
+ */
 void drawInitializationScreen()
 {
         tft.fillScreen(WHITE);
@@ -58,6 +80,14 @@ void drawInitializationScreen()
         tft.print("GPS Fix");
 }
 
+/**
+ * Function: gatheringGPSScreen()
+ *---------------------
+ * Draws the gathering GPS data screen
+ *
+ * Parameters: None
+ * Return: None
+ */
 void gatheringGPSScreen()
 {
         tft.fillScreen(WHITE);
@@ -69,6 +99,14 @@ void gatheringGPSScreen()
         tft.print("GPS Data");
 }
 
+/**
+ * Function: drawCriticalBatteryScreen()
+ *---------------------
+ * Draws battery critically low screen
+ *
+ * Parameters: None
+ * Return: None
+ */
 void drawCriticalBatteryScreen()
 {
         tft.fillScreen(RED);
@@ -80,6 +118,17 @@ void drawCriticalBatteryScreen()
         tft.print("LOW");
 }
 
+/**
+ * Function: drawDetectionScreen()
+ *---------------------
+ * Draws detection screen with detetion event information
+ *
+ * Parameters: char ID[] - Id of tag found
+ * char timeStamp[] - timestamp of when turtle was found
+ * float Long - longitude of detection event
+ * float Lat - latitude of detection event
+ * Return: None
+ */
 int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat)
 {
 
@@ -91,11 +140,9 @@ int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat)
 
         setupText(0,30,BLACK,2);
         tft.setTextWrap(true);
-        //sprintf(IDString,"ID: %s",ID.c_str());
         tft.print(ID);
 
 
-        //NeoSerial.println(timeStamp.c_str());
         setupText(15,75,BLACK,2);
         tft.print(timeStamp);
 
@@ -123,15 +170,14 @@ int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat)
         return 1;
 }
 
-void writeTime(int hours, int minutes)
-{
-        char stringToWrite [7];
-        tft.fillRect(1,1,68,23,BLACK);
-        sprintf(stringToWrite,"%02d:%02d",hours,minutes);
-        setupText(3,5,WHITE,2);
-        tft.print(stringToWrite);
-}
-
+/**
+ * Function: writeCharge(int charge)
+ *---------------------
+ * Writes the remaining battery time left to the screen
+ *
+ * Parameters: int charge - battery time left
+ * Return: None
+ */
 void writeCharge(int charge)
 {
         if(charge == 100)
@@ -144,13 +190,18 @@ void writeCharge(int charge)
                 tft.fillRect(221,1,98,23,BLACK);
                 sprintf(stringToWrite," %d%%",charge);
                 setupText(245,5,WHITE,2);
-                //tft.print("%%");
-                //  setupText(250,5,WHITE,2);
                 tft.print(stringToWrite);
         }
-
 }
 
+/**
+ * Function: setupLCD()
+ *---------------------
+ * Sets the LCD and orientation
+ *
+ * Parameters: None
+ * Return: None
+ */
 void setupLCD()
 {
         tft.begin();
@@ -158,6 +209,17 @@ void setupLCD()
         userSelection = YES_SELECTED;
 }
 
+/**
+ * Function: setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize)
+ *---------------------
+ * Sets the LED pins defined in LEDs.h as outputs
+ *
+ * Parameters: uint16_t xCoord - x coordinate of text to be placed on screen
+ * uint16_t yCoord - y coordinate of text to be placed on screen
+ * uint16_t color - color of text to be written
+ * uint8_t fontSize - font size of text to be written
+ * Return: None
+ */
 void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize)
 {
         tft.setCursor(xCoord, yCoord);
@@ -166,6 +228,14 @@ void setupText(uint16_t xCoord,uint16_t yCoord, uint16_t color, uint8_t fontSize
         tft.setTextWrap(false);
 }
 
+/**
+ * Function: drawYesSelection()
+ *---------------------
+ * Move arrow on screen to YES option
+ *
+ * Parameters: None
+ * Return: None
+ */
 void drawYesSelection()
 {
         tft.fillTriangle(61, 190, 61, 202, 73, 196, BLACK);
@@ -173,6 +243,14 @@ void drawYesSelection()
         userSelection = YES_SELECTED;
 }
 
+/**
+ * Function: drawNoSelection()
+ *---------------------
+ * Move arrow on screen to NO option
+ *
+ * Parameters: None
+ * Return: None
+ */
 void drawNoSelection()
 {
         tft.fillTriangle(61, 190, 61, 202, 73, 196, WHITE);
@@ -180,6 +258,14 @@ void drawNoSelection()
         userSelection = NO_SELECTED;
 }
 
+/**
+ * Function: optionSelected()
+ *---------------------
+ * Keeps track of currently selected YES or NO
+ *
+ * Parameters: None
+ * Return: None
+ */
 int optionSelected()
 {
         int temp = userSelection;
@@ -187,6 +273,14 @@ int optionSelected()
         return temp;
 }
 
+/**
+ * Function: drawErrorScreen()
+ *---------------------
+ * Draws error screen if initialization fails
+ *
+ * Parameters: int errorCode - number passed in that indicates what module failed
+ * Return: None
+ */
 void drawErrorScreen(int errorCode)
 {
         tft.fillScreen(RED);
@@ -215,6 +309,4 @@ void drawErrorScreen(int errorCode)
                 tft.print("GPS");
                 break;
         }
-
-
 }
