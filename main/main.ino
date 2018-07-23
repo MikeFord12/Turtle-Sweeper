@@ -123,7 +123,7 @@ void setup() {
       }
     }
     //If we have waited 6 minutes and there is still no fix, disable GPS and logging functionality
-    if (millis() - GPS_FIX_TIMEOUT > SIX_MINUTES_IN_MS)
+    if (millis() - GPS_FIX_TIMEOUT > SIX_MINUTES_IN_MS || (buttonPressed() == BUTTON_SELECT))
     {
       GPS_INITIALIZED_CORRECTLY = 0;
       STATE = MAIN_SCREEN;
