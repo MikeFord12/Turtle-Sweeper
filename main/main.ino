@@ -42,7 +42,7 @@ unsigned long TOGGLE_LED_TIMER = 0;
 int LED_TOGGLE = 1;
 
 // Variable for no select button timeout
-unsigned long BUTTON_SELECT_TIMEOUT;
+unsigned long BUTTON_SELECT_TIMEOUT = 0;
 
 //Variables for GPS and SD initialization
 int SD_INITIALIZED_CORRECTLY = 1;
@@ -109,12 +109,6 @@ void setup() {
   {
     drawCriticalBatteryScreen();
     while (1);
-  }
-
-  if(getBatteryPercentage() <=10 && !tenMinuteBatterySplashscreen)
-  {
-    tenMinuteBatterySplashscreen = 1;
-    tenMinuteSplashScreen();
   }
 
   STATE = GPSFIX_SCREEN;
@@ -205,19 +199,18 @@ void loop() {
         writeCharge(getBatteryPercentage());
       }
 
-      if(getBatteryPercentage() <= 5)
-        {
+      if (getBatteryPercentage() <= 5)
+      {
         nano.stopReading();
         drawCriticalBatteryScreen();
         while (1);
-        }
+      }
 
-        if(getBatteryPercentage() <= 5)
-        {
-        nano.stopReading();
-        drawCriticalBatteryScreen();
-        while (1);
-        }
+      if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
+      {
+        tenMinuteBatterySplashscreen = 1;
+        tenMinuteSplashScreen();
+      }
 
 
       //if gps fix is available, read it in
@@ -283,13 +276,23 @@ void loop() {
             //add turtle to log
             strcpy(tagIDS[turtlesFound] , myEPC);
 
-            if (!GPS_INITIALIZED_CORRECTLY)
+            //if neither initialized, show user the tag found, user must press select to advance
+            if (!GPS_INITIALIZED_CORRECTLY && !SD_INITIALIZED_CORRECTLY)
             {
               drawBasicDetectionScreen(myEPC);
               BUTTON_SELECT_TIMEOUT = millis();
-              while((buttonPressed() == BUTTON_NONE) && (BUTTON_SELECT_TIMEOUT - millis() < BUTTON_TIMEOUT));
+              while ((buttonSelect = buttonPressed()) != BUTTON_SELECT);// && (millis() - BUTTON_SELECT_TIMEOUT > BUTTON_TIMEOUT));
+
+              drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
+              writeCharge(getBatteryPercentage());
             }
-            
+
+            //if no GPS but there is SD, log the tag ID found
+            if (!GPS_INITIALIZED_CORRECTLY && SD_INITIALIZED_CORRECTLY)
+            {
+              logDetectionEvent(myEPC, "GPS Data Timout", "GPS Data Timout", 1234567, 1234567);
+            }
+
             //update number of turtles found
             turtlesFound++;
             drawTurtlesFound(turtlesFound);
@@ -325,10 +328,12 @@ void loop() {
 
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
     gatheringGPSScreen();
-    GPS_GATHERING_DATA_TIMEOUT = millis();
+
+     if (!fix.valid.location || !fix.valid.time || !fix.valid.date)
+     {
     while (!gps.available());
     fix = gps.read();
-
+    GPS_GATHERING_DATA_TIMEOUT = millis();
     //wait until we have valid data from GPS to save
     while (!fix.valid.location || !fix.valid.time || !fix.valid.date)
     {
@@ -343,6 +348,7 @@ void loop() {
         break;
       }
     }
+     }
 
     //If location vaild
     if (fix.valid.location)
@@ -384,8 +390,8 @@ void loop() {
 
     //Wait for either Yes or no to log data (check input push buttons)
     //Timeout after set time of no button pressed
-    while (((buttonSelect = buttonPressed()) != BUTTON_SELECT) &&
-             (millis() - BUTTON_SELECT_TIMEOUT > BUTTON_TIMEOUT))
+    while (((buttonSelect = buttonPressed()) != BUTTON_SELECT)) //&&
+           //(millis() - BUTTON_SELECT_TIMEOUT > BUTTON_TIMEOUT))
     {
       switch (buttonSelect)
       {

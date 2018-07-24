@@ -109,13 +109,25 @@ void gatheringGPSScreen()
  */
 void drawCriticalBatteryScreen()
 {
-        tft.fillScreen(RED);
+        tft.fillScreen(WHITE);
         setupText(100,80,BLACK,3);
         tft.print("BATTERY");
         setupText(70,110,BLACK,3);
         tft.print("CRITICALLY");
         setupText(130,140,BLACK,3);
         tft.print("LOW");
+}
+
+void tenMinuteSplashScreen()
+{
+        tft.fillScreen(WHITE);
+        setupText(100,80,BLACK,3);
+        tft.print("10 MINUTES");
+        setupText(100,110,BLACK,3);
+        tft.print("OF BATTERY");
+        setupText(110,140,BLACK,3);
+        tft.print("LIFE LEFT");
+        delay(2000);
 }
 
 /**
@@ -206,7 +218,7 @@ void writeCharge(int charge)
         {
                 char stringToWrite [5];
                 tft.fillRect(221,1,98,23,BLACK);
-                sprintf(stringToWrite," %d%%",charge);
+                sprintf(stringToWrite," %d ML",charge);
                 setupText(245,5,WHITE,2);
                 tft.print(stringToWrite);
         }
@@ -301,7 +313,7 @@ int optionSelected()
  */
 void drawErrorScreen(int errorCode)
 {
-        tft.fillScreen(RED);
+        tft.fillScreen(WHITE);
         setupText(20,80,BLACK,2);
         tft.print("INITIALIZATION FAIL");
 
