@@ -281,7 +281,7 @@ void loop() {
             {
               drawBasicDetectionScreen(myEPC);
               BUTTON_SELECT_TIMEOUT = millis();
-              while ((buttonSelect = buttonPressed()) != BUTTON_SELECT);// && (millis() - BUTTON_SELECT_TIMEOUT > BUTTON_TIMEOUT));
+              while ((buttonSelect = buttonPressed() != BUTTON_SELECT) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
 
               drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
               writeCharge(getBatteryPercentage());
@@ -329,26 +329,26 @@ void loop() {
     //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
     gatheringGPSScreen();
 
-     if (!fix.valid.location || !fix.valid.time || !fix.valid.date)
-     {
-    while (!gps.available());
-    fix = gps.read();
-    GPS_GATHERING_DATA_TIMEOUT = millis();
-    //wait until we have valid data from GPS to save
-    while (!fix.valid.location || !fix.valid.time || !fix.valid.date)
+    if (!fix.valid.location || !fix.valid.time || !fix.valid.date)
     {
-      if (gps.available())
+      while (!gps.available());
+      fix = gps.read();
+      GPS_GATHERING_DATA_TIMEOUT = millis();
+      //wait until we have valid data from GPS to save
+      while (!fix.valid.location || !fix.valid.time || !fix.valid.date)
       {
-        //Read Fix
-        fix = gps.read();
-      }
-      if ((millis() - GPS_GATHERING_DATA_TIMEOUT) >= THIRTY_SECONDS_IN_MS)
-      {
-        GPS_GATHERING_TIMEOUT = 1;
-        break;
+        if (gps.available())
+        {
+          //Read Fix
+          fix = gps.read();
+        }
+        if ((millis() - GPS_GATHERING_DATA_TIMEOUT) >= THIRTY_SECONDS_IN_MS)
+        {
+          GPS_GATHERING_TIMEOUT = 1;
+          break;
+        }
       }
     }
-     }
 
     //If location vaild
     if (fix.valid.location)
@@ -390,8 +390,8 @@ void loop() {
 
     //Wait for either Yes or no to log data (check input push buttons)
     //Timeout after set time of no button pressed
-    while (((buttonSelect = buttonPressed()) != BUTTON_SELECT)) //&&
-           //(millis() - BUTTON_SELECT_TIMEOUT > BUTTON_TIMEOUT))
+    while (((buttonSelect = buttonPressed() != BUTTON_SELECT)) &&
+      (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT))
     {
       switch (buttonSelect)
       {
