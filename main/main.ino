@@ -263,6 +263,14 @@ void loop() {
             }
             //add turtle to log
             strcpy(tagIDS[turtlesFound] , myEPC);
+
+            if (!GPS_INITIALIZED_CORRECTLY)
+            {
+              //TODO
+              drawBasicDetectionScreen(myEPC);
+              /*add while checking for any button press*/
+            }
+            
             //update number of turtles found
             turtlesFound++;
             drawTurtlesFound(turtlesFound);
