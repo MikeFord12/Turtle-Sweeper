@@ -31,12 +31,17 @@ SoftwareSerial softSerial(12, 13); //RX, TX
 //time tracking variables for updating time and checking batteries
 unsigned long previousBatteryCheckTime = 0;
 
-//Timout for waiting for GPS fix
+//Timeout for waiting for GPS fix
 unsigned long GPS_FIX_TIMEOUT = 0;
 unsigned long GPS_GATHERING_DATA_TIMEOUT = 0;
-unsigned long TOGGLE_LED_TIMER = 0;
 int GPS_GATHERING_TIMEOUT = 0;
+
+// LED toggling variables
+unsigned long TOGGLE_LED_TIMER = 0;
 int LED_TOGGLE = 1;
+
+// Variable for no select button timeout
+unsigned long BUTTON_SELECT_TIMEOUT;
 
 //Variables for GPS and SD initialization
 int SD_INITIALIZED_CORRECTLY = 1;
@@ -266,9 +271,9 @@ void loop() {
 
             if (!GPS_INITIALIZED_CORRECTLY)
             {
-              //TODO
               drawBasicDetectionScreen(myEPC);
-              /*add while checking for any button press*/
+              BUTTON_SELECT_TIMEOUT = millis();
+              while(buttonPressed() == BUTTON_NONE && BUTTON_SELECT_TIMEOUT - millis() < BUTTON_TIMEOUT);
             }
             
             //update number of turtles found
@@ -359,9 +364,14 @@ void loop() {
       drawDetectionScreen(epcFound, "GPS Data Timout", 00.000, 00.000);
     }
 
+
+    //Set button timeout variable
+    BUTTON_SELECT_TIMEOUT = millis();
+
     //Wait for either Yes or no to log data (check input push buttons)
     //Timeout after set time of no button pressed
-    while (((buttonSelect = buttonPressed()) != BUTTON_SELECT))
+    while (((buttonSelect = buttonPressed()) != BUTTON_SELECT) &&
+             (millis() - BUTTON_SELECT_TIMEOUT > BUTTON_TIMEOUT))
     {
       switch (buttonSelect)
       {

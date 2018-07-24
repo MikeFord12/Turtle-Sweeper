@@ -15,7 +15,7 @@
 #define BUTTON_SELECT 3
 
 // Timeout for no button selection
-#define BUTTON_TIMEOUT 10000
+#define BUTTON_TIMEOUT 15000
 
 // Set delay time
 #define DEBOUNCE_ITERATIONS 5
