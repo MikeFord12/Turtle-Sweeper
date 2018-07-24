@@ -273,7 +273,7 @@ void loop() {
             {
               drawBasicDetectionScreen(myEPC);
               BUTTON_SELECT_TIMEOUT = millis();
-              while(buttonPressed() == BUTTON_NONE && BUTTON_SELECT_TIMEOUT - millis() < BUTTON_TIMEOUT);
+              while((buttonPressed() == BUTTON_NONE) && (BUTTON_SELECT_TIMEOUT - millis() < BUTTON_TIMEOUT));
             }
             
             //update number of turtles found
