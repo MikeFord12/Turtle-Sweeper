@@ -30,6 +30,7 @@ SoftwareSerial softSerial(12, 13); //RX, TX
 
 //time tracking variables for updating time and checking batteries
 unsigned long previousBatteryCheckTime = 0;
+int tenMinuteBatterySplashscreen = 0;
 
 //Timeout for waiting for GPS fix
 unsigned long GPS_FIX_TIMEOUT = 0;
@@ -104,10 +105,16 @@ void setup() {
     NeoSerial.println("SD initalized");
   }
   //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
-  if (getBatteryPercentage() <= 15)//TODO: CHANGE THIS THRESHOLD
+  if (getBatteryPercentage() <= 5)
   {
     drawCriticalBatteryScreen();
     while (1);
+  }
+
+  if(getBatteryPercentage() <=10 && !tenMinuteBatterySplashscreen)
+  {
+    tenMinuteBatterySplashscreen = 1;
+    tenMinuteSplashScreen();
   }
 
   STATE = GPSFIX_SCREEN;
@@ -198,12 +205,19 @@ void loop() {
         writeCharge(getBatteryPercentage());
       }
 
-      /*if(getBatteryPercentage() <= XX)
+      if(getBatteryPercentage() <= 5)
         {
         nano.stopReading();
         drawCriticalBatteryScreen();
         while (1);
-        }*/
+        }
+
+        if(getBatteryPercentage() <= 5)
+        {
+        nano.stopReading();
+        drawCriticalBatteryScreen();
+        while (1);
+        }
 
 
       //if gps fix is available, read it in
