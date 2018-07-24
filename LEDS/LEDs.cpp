@@ -41,3 +41,9 @@ void displayGreen()
         digitalWrite(RED_LED_PIN, LOW);
         digitalWrite(GREEN_LED_PIN, HIGH);
 }
+
+void turnOff()
+{
+        digitalWrite(RED_LED_PIN, LOW);
+        digitalWrite(GREEN_LED_PIN, LOW);
+}

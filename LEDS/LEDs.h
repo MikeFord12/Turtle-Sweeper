@@ -16,4 +16,6 @@ void displayRed();
 //Turn LED Green
 void displayGreen();
 
+void turnOff();
+
 #endif

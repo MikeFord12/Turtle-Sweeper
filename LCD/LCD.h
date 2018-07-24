@@ -31,6 +31,7 @@ extern Adafruit_ILI9341 tft;
 
 void drawCriticalBatteryScreen();
 int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat);
+int drawBasicDetectionScreen(char ID[]);
 void drawInitializationScreen();
 void drawMainScreen(int noGPS, int noSD);
 void drawTurtlesFound(int turtlesFound);

@@ -170,6 +170,24 @@ int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat)
         return 1;
 }
 
+
+int drawBasicDetectionScreen(char ID[])
+{
+
+        tft.fillScreen(WHITE);
+        setupText(60,5,BLACK,2);
+        tft.print("TURTLE DETECTED");
+        tft.drawRect(10,70,300,70,WHITE);
+
+        setupText(0,30,BLACK,2);
+        tft.setTextWrap(true);
+        tft.print(ID);
+
+        setupText(0,150,WHITE,2);
+        tft.print("Press any button to continue.");
+
+        return 1;
+}
 /**
  * Function: writeCharge(int charge)
  *---------------------
