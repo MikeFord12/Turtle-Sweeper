@@ -51,6 +51,9 @@ int GPS_INITIALIZED_CORRECTLY = 1;
 // variable to keep track of which button press
 int buttonSelect = BUTTON_NONE;
 
+// variable to determine which mode the system is in
+int isInReadingMode = 0;
+
 // current voltage
 double voltage;
 
@@ -68,6 +71,32 @@ void setup() {
   //Serial port to print out debug messages
   NeoSerial.begin(115200);
   while (!NeoSerial);
+
+  // Ask user for read/write mode
+  drawModeSelectionScreen();
+  while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+  {
+    switch (buttonSelect)
+    {
+      case (BUTTON_LEFT):
+        drawYesSelection();
+        break;
+      case (BUTTON_RIGHT):
+        drawNoSelection();
+        break;
+    }
+  }
+
+  if (optionSelected() == YES_SELECTED)
+  {
+    isInReadingMode = 1;
+  }
+  else
+  {
+    isInReadingMode = 0;
+  }
+
+  // TODO: FACTOR OUT INIT FUNCTIONS BASED ON isInReadingMode flag
 
   int statusCode = 0;
 
@@ -206,7 +235,7 @@ void loop() {
         while (1);
       }
 
-    /*  if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
+      /*if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
       {
         tenMinuteBatterySplashscreen = 1;
         tenMinuteSplashScreen();
@@ -216,9 +245,6 @@ void loop() {
     drawTurtlesFound(turtlesFound);
     writeCharge(getBatteryPercentage());
       }*/
-
-      
-
 
       //if gps fix is available, read it in
       if (GPS_INITIALIZED_CORRECTLY)
@@ -302,7 +328,7 @@ void loop() {
               drawBasicDetectionScreen(myEPC);
               BUTTON_SELECT_TIMEOUT = millis();
               while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
-              logDetectionEvent(myEPC, "GPS Data Timeout", "GPS Data Timeout", 1234567, 1234567);
+              logDetectionEvent(myEPC, "GPS Data Timout", "GPS Data Timout", 1234567, 1234567);
               drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
               writeCharge(getBatteryPercentage()); 
             }
