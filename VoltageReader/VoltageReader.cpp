@@ -64,7 +64,7 @@ int convertVrefToPercentage(long vref)
 
 								case 4989 ... 5010:	// 6.8v
 																return 10;
-								// >>> Above is green, return 100
+								// >>> Above is green
 								case 5011 ... LONG_MAX: // 6.9v and above
 																return 100;
 

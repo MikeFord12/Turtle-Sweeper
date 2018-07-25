@@ -206,11 +206,18 @@ void loop() {
         while (1);
       }
 
-      if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
+      /*if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
       {
         tenMinuteBatterySplashscreen = 1;
         tenMinuteSplashScreen();
-      }
+
+          displayGreen();
+    drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
+    drawTurtlesFound(turtlesFound);
+    writeCharge(getBatteryPercentage());
+      }*/
+
+      
 
 
       //if gps fix is available, read it in
@@ -279,9 +286,10 @@ void loop() {
             //if neither initialized, show user the tag found, user must press select to advance
             if (!GPS_INITIALIZED_CORRECTLY && !SD_INITIALIZED_CORRECTLY)
             {
+              displayRed();
               drawBasicDetectionScreen(myEPC);
               BUTTON_SELECT_TIMEOUT = millis();
-              while ((buttonSelect = buttonPressed() != BUTTON_SELECT) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
+              while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
 
               drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
               writeCharge(getBatteryPercentage());
@@ -290,7 +298,13 @@ void loop() {
             //if no GPS but there is SD, log the tag ID found
             if (!GPS_INITIALIZED_CORRECTLY && SD_INITIALIZED_CORRECTLY)
             {
+              displayRed();
+              drawBasicDetectionScreen(myEPC);
+              BUTTON_SELECT_TIMEOUT = millis();
+              while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
               logDetectionEvent(myEPC, "GPS Data Timout", "GPS Data Timout", 1234567, 1234567);
+              drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
+              writeCharge(getBatteryPercentage()); 
             }
 
             //update number of turtles found
