@@ -206,7 +206,7 @@ void loop() {
         while (1);
       }
 
-      /*if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
+    /*  if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
       {
         tenMinuteBatterySplashscreen = 1;
         tenMinuteSplashScreen();
@@ -302,7 +302,7 @@ void loop() {
               drawBasicDetectionScreen(myEPC);
               BUTTON_SELECT_TIMEOUT = millis();
               while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
-              logDetectionEvent(myEPC, "GPS Data Timout", "GPS Data Timout", 1234567, 1234567);
+              logDetectionEvent(myEPC, "GPS Data Timeout", "GPS Data Timeout", 1234567, 1234567);
               drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
               writeCharge(getBatteryPercentage()); 
             }

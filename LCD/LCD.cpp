@@ -340,3 +340,10 @@ void drawErrorScreen(int errorCode)
                 break;
         }
 }
+
+void printHexValue(int desiredTagID)
+{
+        tft.fillRect(139,79,75,50,WHITE);
+        setupText(140,80,BLACK,3);
+        tft.print(desiredTagID,HEX);
+}

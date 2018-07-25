@@ -60,8 +60,44 @@ int setupCommunication()
 
         nano.setRegion(REGION_NORTHAMERICA); //Set to North America
 
-        nano.setReadPower(2500); //5.00 dBm. Higher values may caues USB port to brown out
+        nano.setReadPower(2700); //5.00 dBm. Higher values may caues USB port to brown out
         //Max Read TX Power is 27.00 dBm and may cause temperature-limit throttling
 
         return 0;
+}
+
+int setupCommunicationWriteMode()
+{
+        NeoSerial.begin(115200);
+        while (!NeoSerial); //Wait for the serial port to come online
+
+        if (setupNano(38400) == false) //Configure nano to run at 38400bps
+        {
+                NeoSerial.println(F("Module failed to respond. Please check wiring."));
+                return 2;
+        }
+
+        nano.setRegion(REGION_NORTHAMERICA); //Set to North America
+
+        nano.setReadPower(2700); //5.00 dBm. Higher values may caues USB port to brown out
+        //Max Read TX Power is 27.00 dBm and may cause temperature-limit throttling
+
+        nano.setWritePower(2700); //5.00 dBm. Higher values may caues USB port to brown out
+        //Max Read TX Power is 27.00 dBm and may cause temperature-limit throttling
+
+        return 0;
+}
+int writeToTag(int idToWrite)
+{
+        char tagBase[12]="";
+
+
+        sprintf(tagBase,"%c%c%c%c%c%c%c%c%c%c%c%c",(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)idToWrite);
+
+        byte responseType = nano.writeTagEPC(tagBase, 12);
+
+        if (responseType == RESPONSE_SUCCESS)
+                return 1;
+        else
+                return 0;
 }

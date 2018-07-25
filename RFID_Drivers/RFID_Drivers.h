@@ -13,6 +13,8 @@ extern SoftwareSerial softSerial;
 boolean setupNano(long baudRate);
 
 int setupCommunication();
+int setupCommunicationWriteMode();
+int writeToTag(int idToWrite)
 
 
 #endif
