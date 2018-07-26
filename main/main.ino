@@ -78,11 +78,15 @@ void setup() {
   NeoSerial.begin(115200);
   while (!NeoSerial);
 
+<<<<<<< HEAD
   //variable to keep track of which module failed in initialization
+=======
+>>>>>>> 6070b0ff4043c04c44f016819b64dd69404ae682
   int statusCode = 0;
 
   //initialize LCD and Buttons for mode selection
   setupLCD();
+
   NeoSerial.println("LCD initalized");
 
   setupPushButtons();
@@ -91,8 +95,12 @@ void setup() {
 
   // Ask user for read/write mode
   drawModeSelectScreen();
+<<<<<<< HEAD
   //Loop until user presses SELECT pin
   while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
+=======
+  while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+>>>>>>> 6070b0ff4043c04c44f016819b64dd69404ae682
   {
     switch (buttonSelect)
     {
@@ -107,9 +115,12 @@ void setup() {
     }
   }
 
+<<<<<<< HEAD
   //Because READ is on the left side of the screen and WRITE is on the right
   //They are where YES and NO were for other screens.
   //YES_SELECTED means the user chose READ, NO_SELECTED means user chose WRITE
+=======
+>>>>>>> 6070b0ff4043c04c44f016819b64dd69404ae682
   if (optionSelected() == YES_SELECTED)
   {
     isInReadingMode = 1;
@@ -467,7 +478,7 @@ void loop() {
 
       //Wait for either Yes or no to log data (check input push buttons)
       //Timeout after set time of no button pressed
-      while (((buttonSelect = buttonPressed()) != BUTTON_SELECT) &&
+      while (((buttonSelect = buttonPressed() != BUTTON_SELECT)) &&
              (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT))
       {
         switch (buttonSelect)
@@ -525,9 +536,13 @@ void loop() {
 
     printDesiredTagValue(tagIDToWrite); //shows 0 on screen
 
+<<<<<<< HEAD
     //if user presses right button, increase tag ID by one
     //if user presses left, decrement tag ID by one
     while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
+=======
+    while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+>>>>>>> 6070b0ff4043c04c44f016819b64dd69404ae682
     {
       if ((buttonSelect == BUTTON_LEFT) && tagIDToWrite > 0)
       {
@@ -545,8 +560,14 @@ void loop() {
     //display are you sure screen
     writeConfirmationScreen(tagIDToWrite);
 
+<<<<<<< HEAD
     //Same logic as our other "yes or no screen"
     while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
+=======
+    //Same logic as our current "yes or no screen"
+
+    while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+>>>>>>> 6070b0ff4043c04c44f016819b64dd69404ae682
     {
       switch (buttonSelect)
       {
