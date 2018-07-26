@@ -49,6 +49,7 @@ void drawModeSelectScreen();
 void writeConfirmationScreen(int writeVal);
 void drawWriteSuccessful();
 void drawWriteFailure();
+void drawNumberScreen();
 
 
 #endif

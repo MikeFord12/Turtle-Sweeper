@@ -505,7 +505,7 @@ void loop() {
   {
     tagIDToWrite = 0;
 
-    //display number screen
+    drawNumberScreen();
 
     printDesiredTagValue(tagIDToWrite); //shows 0 on screen
 
@@ -533,37 +533,32 @@ void loop() {
     {
       switch (buttonSelect)
       {
-        case (BUTTON_LEFT):   // YES
-
-          if (writeToTag(tagIDToWrite))
-          {
-            //display tag successful screen, do you want to write another tag
-            drawWriteSuccessful();
-
-            //if no tell user to turn off device or power cycle if they want to use it further
-          }
-          else
-          {
-            //display tag not written successfully do you want to try again
-            drawWriteFailure();
-
-            //if no tell user to turn off device or power cycle if they want to use it further
-
-          }
-
-          //back to number screen
-          printDesiredTagValue(tagIDToWrite);
-
+        case (BUTTON_LEFT):
+          drawYesSelection();
           break;
-
-        case (BUTTON_RIGHT):    // No
-          {
-            printDesiredTagValue(tagIDToWrite);
-          }
-          
+        case (BUTTON_RIGHT):
+          drawNoSelection();
           break;
       }
     }
-  }
 
+    if (optionSelected() == YES_SELECTED)
+    {
+      if (writeToTag(tagIDToWrite))
+      {
+        //display tag successful screen, do you want to write another tag
+        drawWriteSuccessful();
+      }
+      else
+      {
+        //display tag not written successfully do you want to try again
+        drawWriteFailure();
+      }
+    }
+    else
+    {
+      isInReadingMode = 0;
+    }
+  }
 }
+

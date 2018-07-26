@@ -353,47 +353,63 @@ void drawModeSelectScreen()
         tft.fillScreen(WHITE);
         setupText(40,80,BLACK,2);
         tft.print("Select");
-        setupText(40,80,BLACK,2);
+        setupText(110,80,BLACK,2);
         tft.print("Mode");
 
         setupText(80, 190, BLACK, 2);
         tft.print("Read");
         setupText(208, 190, BLACK, 2);
         tft.print("Write");
+
+        tft.fillTriangle(61, 190, 61, 202, 73, 196, BLACK);
+        tft.fillTriangle(188, 190, 188, 202, 200, 196, WHITE);
 }
 
 void writeConfirmationScreen(int writeVal)
 {
-	char stringToWrite [5];
-	
-	tft.fillScreen(WHITE);
-    setupText(20,80,BLACK,2);
-    tft.print("Write Value?");
-	
-    sprintf(stringToWrite," %d ",writeVal);
-    setupText(245,5,WHITE,2);
-    tft.print(stringToWrite);
-				
-	setupText(80, 190, BLACK, 2);
-    tft.print("Read");
-    setupText(208, 190, BLACK, 2);
-    tft.print("Write");
+        char stringToWrite [6];
+
+        tft.fillScreen(WHITE);
+        setupText(20,80,BLACK,2);
+        tft.print("Write Value?");
+
+        sprintf(stringToWrite," %d ",writeVal);
+        setupText(245,5,WHITE,2);
+        tft.print(stringToWrite);
+
+        setupText(80, 190, BLACK, 2);
+        tft.print("Yes");
+        setupText(208, 190, BLACK, 2);
+        tft.print("No");
+
+        tft.fillTriangle(61, 190, 61, 202, 73, 196, BLACK);
+        tft.fillTriangle(188, 190, 188, 202, 200, 196, WHITE);
+}
+
+void drawNumberScreen()
+{
+        tft.fillScreen(WHITE);
+        setupText(20,80,BLACK,2);
+        tft.print("Scroll to desired ID (0-255)");
+
+        tft.fillTriangle( 61, 196, 72, 190, 73, 202, BLACK);
+        tft.fillTriangle(188, 190, 188, 202, 200, 196, BLACK);
 }
 
 void drawWriteSuccessful()
 {
-	tft.fillScreen(GREEN);
-    setupText(20,100,BLACK,2);
-    tft.print("Write Success!");
-	
-	delay(3000);
+        tft.fillScreen(GREEN);
+        setupText(20,100,BLACK,2);
+        tft.print("Write Success!");
+
+        delay(3000);
 }
 
 void drawWriteFailure()
 {
-	tft.fillScreen(RED);
-    setupText(20,100,BLACK,2);
-    tft.print("Write Failure!");
-	
-	delay(3000);
+        tft.fillScreen(RED);
+        setupText(20,100,BLACK,2);
+        tft.print("Write Failure!");
+
+        delay(3000);
 }
