@@ -45,6 +45,6 @@ int optionSelected();
 void drawErrorScreen(int errorCode);
 void gatheringGPSScreen();
 void printDesiredTagValue(int desiredTagID)
-void drawModeSelectionScreen();
+void drawModeSelectScreen();
 
 #endif

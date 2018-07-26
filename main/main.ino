@@ -174,7 +174,7 @@ void setup() {
       }
     }
   }
-  if (!isInReadingMode)
+  else if (!isInReadingMode)
   {
     if (statusCode = setupCommunicationWriteMode())
     {
@@ -503,66 +503,67 @@ void loop() {
 
   if (!isInReadingMode)
   {
-    /*
-       TODO
+    tagIDToWrite = 0;
 
-       tagIDToWrite = 0
+    //display number screen
 
+    printDesiredTagValue(tagIDToWrite); //shows 0 on screen
 
-       -display number screen
+    while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+    {
+      if ((buttonSelect == BUTTON_LEFT) && tagIDToWrite > 0)
+      {
+        tagIDToWrite--;
+        printDesiredTagValue(tagIDToWrite); //decrement variable and value shown on screen
+      }
 
-       printDesiredTagValue(tagIDToWrite); //shows 0 on screen
+      if ((buttonSelect == BUTTON_RIGHT) && tagIDToWrite < 255)
+      {
+        tagIDToWrite++;
+        printDesiredTagValue(tagIDToWrite);  //increment variable and value shown on screen
+      }
+    }
 
-       while(check for buttons)
-       {
-          if(left && tagIDToWrite>0)
-          {
-            tagIDToWrite--;
-            printDesiredTagValue(tagIDToWrite); //decrement variable and value shown on screen
-          }
+    //display are you sure screen
+    writeConfirmationScreen(tagIDToWrite);
 
-          if(right && tagIDToWrite<255)
-          {
-            tagIDToWrite++;
-            printDesiredTagValue(tagIDToWrite);  //increment variable and value shown on screen
-          }
+    //Same logic as our current "yes or no screen"
 
-          if(buttonpressed == select)
-          {
-              break;                             //if select -  break out of while and proceed with current variable value
-          }
-        }
+    while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+    {
+      switch (buttonSelect)
+      {
+        case (BUTTON_LEFT):   // YES
 
-        //display are you sure screen
-        //areYouSureScreen(tagIDToWrite);
-
-        //Same logic as our current "yes or no screen"
-
-        if(yes)
-        {
-          if(writeToTag(tagIDToWrite))
+          if (writeToTag(tagIDToWrite))
           {
             //display tag successful screen, do you want to write another tag
-
-            //if yes back to number screen
+            drawWriteSuccessful();
 
             //if no tell user to turn off device or power cycle if they want to use it further
           }
           else
           {
             //display tag not written successfully do you want to try again
-
-            //if yes back to number screen
+            drawWriteFailure();
 
             //if no tell user to turn off device or power cycle if they want to use it further
 
           }
-        }
-        if(no)
-        {
-            back to number screen
-        }
 
-    */
+          //back to number screen
+          printDesiredTagValue(tagIDToWrite);
+
+          break;
+
+        case (BUTTON_RIGHT):    // No
+          {
+            printDesiredTagValue(tagIDToWrite);
+          }
+          
+          break;
+      }
+    }
   }
+
 }

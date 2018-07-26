@@ -348,7 +348,7 @@ void printDesiredTagValue(int desiredTagID)
         tft.print(desiredTagID,HEX);
 }
 
-void drawModeSelectionScreen()
+void drawModeSelectScreen()
 {
         tft.fillScreen(WHITE);
         setupText(40,80,BLACK,2);
