@@ -1,10 +1,12 @@
 #include "VoltageReader.h"
 
-int getBatteryPercentage()
+// returns time remaining on battery in minutes
+int getBatteryTimeRemaining()
 {
 								return convertVrefToPercentage(getVref());
 }
 
+// Gets reference voltage based on internal arduino voltage
 long getVref()
 {
 								// Read 1.1V reference against AVcc
@@ -32,6 +34,7 @@ long getVref()
 								return result; // Vcc in millivolts
 }
 
+// converts vref to time remaining on battery
 int convertVrefToPercentage(long vref)
 {
 								switch(vref)

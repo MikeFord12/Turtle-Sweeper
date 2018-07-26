@@ -4,7 +4,8 @@
 #include "SPI.h"
 #include "limits.h"
 
-int getBatteryPercentage();
+// returns time remaining on battery in minutes
+int getBatteryTimeRemaining();
 
 // Helper methods
 long getVref();

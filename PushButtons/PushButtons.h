@@ -9,6 +9,7 @@
 #define RIGHT_BUTTON_PIN 32
 #define SELECT_BUTTON_PIN 36
 
+// PushButton output defines
 #define BUTTON_NONE 0
 #define BUTTON_LEFT 1
 #define BUTTON_RIGHT 2

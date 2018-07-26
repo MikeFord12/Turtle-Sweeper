@@ -42,6 +42,14 @@ void displayGreen()
         digitalWrite(GREEN_LED_PIN, HIGH);
 }
 
+/**
+ * Function: TurnOff()
+ *---------------------
+ * Turns off both red and green LED pins
+ *
+ * Parameters: None
+ * Return: None
+ */
 void turnOff()
 {
         digitalWrite(RED_LED_PIN, LOW);

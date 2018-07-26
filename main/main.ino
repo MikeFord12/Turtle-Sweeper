@@ -3,8 +3,6 @@
 #include <RFID_Drivers.h>
 #include <SoftwareSerial.h>
 #include <PushButtons.h>
-
-
 #include <SPI.h>
 #include <SD.h>
 #include <NeoHWSerial.h>
@@ -18,12 +16,15 @@
 #include <SD_Drivers.h>
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
+
 //GPS object and fix object
 NMEAGPS gps;
 gps_fix fix;
+
 //log of turtles found
 char tagIDS[20][50];
 int turtlesFound = 0;
+
 //RFID object
 RFID nano;
 SoftwareSerial softSerial(12, 13); //RX, TX
@@ -67,6 +68,7 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 //Data file object
 File myFile;
 
+//Number to write to tag
 int tagIDToWrite = 0;
 
 void setup() {
@@ -74,21 +76,25 @@ void setup() {
   NeoSerial.begin(115200);
   while (!NeoSerial);
 
+  //code for status failures
   int statusCode = 0;
 
   //initialize LCD and Buttons for mode selection
   setupLCD();
 
-  NeoSerial.println("LCD initalized");
+  //NeoSerial.println("LCD initalized");
 
   setupPushButtons();
-  NeoSerial.println("Buttons initalized");
+  //NeoSerial.println("Buttons initalized");
 
 
   // Ask user for read/write mode
   drawModeSelectScreen();
-  while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+
+  // Loop until select button is pressed
+  while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
   {
+    // Draw selection based on user input
     switch (buttonSelect)
     {
       case (BUTTON_LEFT):
@@ -100,6 +106,7 @@ void setup() {
     }
   }
 
+  // Set mode variable based on user input
   if (optionSelected() == YES_SELECTED)
   {
     isInReadingMode = 1;
@@ -143,7 +150,7 @@ void setup() {
       NeoSerial.println("SD initalized");
     }
     //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
-    if (getBatteryPercentage() <= 5)
+    if (getBatteryTimeRemaining() <= 5)
     {
       drawCriticalBatteryScreen();
       while (1);
@@ -189,8 +196,6 @@ void loop() {
 
   if (isInReadingMode)
   {
-    // put your main code here, to run repeatedly:
-
     //code if system is in main state
     if (STATE == MAIN_SCREEN)
     {
@@ -201,7 +206,7 @@ void loop() {
       displayGreen();
       drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
       drawTurtlesFound(turtlesFound);
-      writeCharge(getBatteryPercentage());
+      writeCharge(getBatteryTimeRemaining());
 
       //if gps fix is available, read it in
       if (GPS_INITIALIZED_CORRECTLY)
@@ -216,7 +221,7 @@ void loop() {
       //Begin scanning for tags
       nano.startReading();
 
-
+      // Loop through read stages
       while (STATE == MAIN_SCREEN)
       {
         char myEPC[50] = "";
@@ -230,6 +235,7 @@ void loop() {
           turnOff();
         }
 
+        // Toggle LED timer when needed
         if (millis() - TOGGLE_LED_TIMER >= TWO_SECONDS_IN_MS)
         {
           //update new battery check time
@@ -247,17 +253,17 @@ void loop() {
           previousBatteryCheckTime = millis();
 
           //check battery charge
-          writeCharge(getBatteryPercentage());
+          writeCharge(getBatteryTimeRemaining());
         }
 
-        if (getBatteryPercentage() <= 5)
+        if (getBatteryTimeRemaining() <= 5)
         {
           nano.stopReading();
           drawCriticalBatteryScreen();
           while (1);
         }
 
-        /*  if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
+        /*  if (getBatteryTimeRemaining() <= 10 && !tenMinuteBatterySplashscreen)
           {
             tenMinuteBatterySplashscreen = 1;
             tenMinuteSplashScreen();
@@ -265,11 +271,8 @@ void loop() {
               displayGreen();
           drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
           drawTurtlesFound(turtlesFound);
-          writeCharge(getBatteryPercentage());
+          writeCharge(getBatteryTimeRemaining());
           }*/
-
-
-
 
         //if gps fix is available, read it in
         if (GPS_INITIALIZED_CORRECTLY)
@@ -343,7 +346,7 @@ void loop() {
                 while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
 
                 drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
-                writeCharge(getBatteryPercentage());
+                writeCharge(getBatteryTimeRemaining());
               }
 
               //if no GPS but there is SD, log the tag ID found
@@ -355,7 +358,7 @@ void loop() {
                 while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
                 logDetectionEvent(myEPC, "GPS Data Timeout", "GPS Data Timeout", 1234567, 1234567);
                 drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
-                writeCharge(getBatteryPercentage());
+                writeCharge(getBatteryTimeRemaining());
               }
 
               //update number of turtles found
@@ -501,34 +504,39 @@ void loop() {
     }
   }
 
-  if (!isInReadingMode)
+  // code for write mode
+  else if (!isInReadingMode)
   {
+    // reset write variable ID
     tagIDToWrite = 0;
 
+    // Display user input screen
     drawNumberScreen();
 
     printDesiredTagValue(tagIDToWrite); //shows 0 on screen
 
+    // loop until button select is pressed
     while (buttonSelect = buttonPressed() != BUTTON_SELECT)
     {
+       //decrement variable and value shown on screen
       if ((buttonSelect == BUTTON_LEFT) && tagIDToWrite > 0)
       {
         tagIDToWrite--;
-        printDesiredTagValue(tagIDToWrite); //decrement variable and value shown on screen
+        printDesiredTagValue(tagIDToWrite);
       }
 
+      //increment variable and value shown on screen
       if ((buttonSelect == BUTTON_RIGHT) && tagIDToWrite < 255)
       {
         tagIDToWrite++;
-        printDesiredTagValue(tagIDToWrite);  //increment variable and value shown on screen
+        printDesiredTagValue(tagIDToWrite);
       }
     }
 
     //display are you sure screen
     writeConfirmationScreen(tagIDToWrite);
 
-    //Same logic as our current "yes or no screen"
-
+    // Prompt user for selection ensure
     while (buttonSelect = buttonPressed() != BUTTON_SELECT)
     {
       switch (buttonSelect)
@@ -542,6 +550,7 @@ void loop() {
       }
     }
 
+    // If user selected yes
     if (optionSelected() == YES_SELECTED)
     {
       if (writeToTag(tagIDToWrite))
@@ -555,6 +564,7 @@ void loop() {
         drawWriteFailure();
       }
     }
+    // If user selected no
     else
     {
       isInReadingMode = 0;
