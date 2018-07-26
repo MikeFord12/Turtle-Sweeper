@@ -78,9 +78,6 @@ void drawInitializationScreen()
         tft.print("for");
         setupText(90,140,BLACK,3);
         tft.print("GPS Fix");
-		
-		setupText(20,220,BLACK,2);
-		tft.print("Press select for no GPS");
 }
 
 /**
@@ -198,7 +195,7 @@ int drawBasicDetectionScreen(char ID[])
         tft.setTextWrap(true);
         tft.print(ID);
 
-        setupText(0,150,BLACK,2);
+        setupText(0,150,WHITE,2);
         tft.print("Press any button to continue.");
 
         return 1;
@@ -294,7 +291,7 @@ void drawNoSelection()
 /**
  * Function: optionSelected()
  *---------------------
- * Returns option selected, and resets option to default yes
+ * Keeps track of currently selected YES or NO
  *
  * Parameters: None
  * Return: None
@@ -344,17 +341,23 @@ void drawErrorScreen(int errorCode)
         }
 }
 
-void drawModeSelectionScreen()
+void printDesiredTagValue(int desiredTagID)
 {
-	tft.fillScreen(WHITE);
-    setupText(40,80,BLACK,2);
-    tft.print("Select");
-	setupText(40,80,BLACK,2);
-    tft.print("Mode");
-	
-	setupText(80, 190, BLACK, 2);
-    tft.print("Read");
-    setupText(208, 190, BLACK, 2);
-    tft.print("Write");
+        tft.fillRect(139,79,75,50,WHITE);
+        setupText(140,80,BLACK,3);
+        tft.print(desiredTagID,HEX);
 }
 
+void drawModeSelectionScreen()
+{
+        tft.fillScreen(WHITE);
+        setupText(40,80,BLACK,2);
+        tft.print("Select");
+        setupText(40,80,BLACK,2);
+        tft.print("Mode");
+
+        setupText(80, 190, BLACK, 2);
+        tft.print("Read");
+        setupText(208, 190, BLACK, 2);
+        tft.print("Write");
+}

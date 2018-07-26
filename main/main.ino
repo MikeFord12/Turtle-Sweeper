@@ -1,12 +1,10 @@
+#include <SparkFun_UHF_RFID_Reader.h>
 #include <Buzzer.h>
+#include <RFID_Drivers.h>
 #include <SoftwareSerial.h>
 #include <PushButtons.h>
-#include <RFID_Drivers.h>
-#include <SparkFun_UHF_RFID_Reader.h>
-#include <SD_Drivers.h>
-#include <LCD.h>
-#include "Adafruit_GFX.h"
-#include "Adafruit_ILI9341.h"
+
+
 #include <SPI.h>
 #include <SD.h>
 #include <NeoHWSerial.h>
@@ -16,8 +14,10 @@
 #include <GPS.h>
 #include <VoltageReader.h>
 #include "Globals.h"
-
-
+#include <LCD.h>
+#include <SD_Drivers.h>
+#include "Adafruit_GFX.h"
+#include "Adafruit_ILI9341.h"
 //GPS object and fix object
 NMEAGPS gps;
 gps_fix fix;
@@ -67,10 +67,23 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 //Data file object
 File myFile;
 
+int tagIDToWrite = 0;
+
 void setup() {
   //Serial port to print out debug messages
   NeoSerial.begin(115200);
   while (!NeoSerial);
+
+
+  int statusCode = 0;
+
+  //initialize LCD and Buttons for mode selection
+  setupLCD();
+  NeoSerial.println("LCD initalized");
+
+  setupPushButtons();
+  NeoSerial.println("Buttons initalized");
+
 
   // Ask user for read/write mode
   drawModeSelectionScreen();
@@ -96,155 +109,99 @@ void setup() {
     isInReadingMode = 0;
   }
 
-  // TODO: FACTOR OUT INIT FUNCTIONS BASED ON isInReadingMode flag
-
-  int statusCode = 0;
-
-  //Initialize RFID Reader, LCD, GPS, LEDS, pushbuttons, buzzer, SD
-  setupLEDS();
-  NeoSerial.println("LEDS initalized");
-  setupGPS();
-  NeoSerial.println("GPS initalized");
-  setupLCD();
-  NeoSerial.println("LCD initalized");
-
-  if (statusCode = setupCommunication())
+  if (isInReadingMode)
   {
-    drawErrorScreen(statusCode);
-    while (1);
-  }
-  else
-  {
-    NeoSerial.println("RFID initalized");
-  }
-  setupPushButtons();
-  NeoSerial.println("Buttons initalized");
-  setupBuzzer();
-  NeoSerial.println("Buzzer initialized");
+    //Initialize RFID Reader, LCD, GPS, LEDS, buzzer, SD
+    setupLEDS();
+    //NeoSerial.println("LEDS initalized");
+    setupGPS();
+    //NeoSerial.println("GPS initalized");
 
-  if (statusCode = initializeSDCard())
-  {
-    //If SD is not initialized correctly
-    SD_INITIALIZED_CORRECTLY = 0;
-    drawErrorScreen(statusCode);
-    delay(1000);
-  }
-  else
-  {
-    NeoSerial.println("SD initalized");
-  }
-  //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
-  if (getBatteryPercentage() <= 5)
-  {
-    drawCriticalBatteryScreen();
-    while (1);
-  }
 
-  STATE = GPSFIX_SCREEN;
-
-  //Stay in while until we get a valid GPS fix
-  drawInitializationScreen();
-  GPS_FIX_TIMEOUT = millis();
-  while (STATE == GPSFIX_SCREEN)
-  {
-    if (gps.available())
+    if (statusCode = setupCommunication())
     {
-      //Read Fix
-      fix = gps.read();
-
-      if (fix.valid.time && fix.valid.location)
-      {
-        STATE = MAIN_SCREEN;
-      }
+      drawErrorScreen(statusCode);
+      while (1);
     }
-    //If we have waited 6 minutes and there is still no fix, disable GPS and logging functionality
-    if (millis() - GPS_FIX_TIMEOUT > SIX_MINUTES_IN_MS || (buttonPressed() == BUTTON_SELECT))
+    else
     {
-      GPS_INITIALIZED_CORRECTLY = 0;
-      STATE = MAIN_SCREEN;
+      NeoSerial.println("RFID initalized");
     }
-  }
-}
 
-void loop() {
-  // put your main code here, to run repeatedly:
+    setupBuzzer();
+    NeoSerial.println("Buzzer initialized");
 
-  //code if system is in main state
-  if (STATE == MAIN_SCREEN)
-  {
-    //reset turtle already logged
-    int turtleAlreadyLogged = 0;
+    if (statusCode = initializeSDCard())
+    {
+      //If SD is not initialized correctly
+      SD_INITIALIZED_CORRECTLY = 0;
+      drawErrorScreen(statusCode);
+      delay(1000);
+    }
+    else
+    {
+      NeoSerial.println("SD initalized");
+    }
+    //If battery is very low on powerup, display low battery and do not let the system go further until they replace or recharge battery
+    if (getBatteryPercentage() <= 5)
+    {
+      drawCriticalBatteryScreen();
+      while (1);
+    }
 
-    //display green LED and draw main screen
-    displayGreen();
-    drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
-    drawTurtlesFound(turtlesFound);
-    writeCharge(getBatteryPercentage());
+    STATE = GPSFIX_SCREEN;
 
-    //if gps fix is available, read it in
-    if (GPS_INITIALIZED_CORRECTLY)
+    //Stay in while until we get a valid GPS fix
+    drawInitializationScreen();
+    GPS_FIX_TIMEOUT = millis();
+    while (STATE == GPSFIX_SCREEN)
     {
       if (gps.available())
       {
         //Read Fix
         fix = gps.read();
+
+        if (fix.valid.time && fix.valid.location)
+        {
+          STATE = MAIN_SCREEN;
+        }
+      }
+      //If we have waited 6 minutes and there is still no fix, disable GPS and logging functionality
+      if (millis() - GPS_FIX_TIMEOUT > SIX_MINUTES_IN_MS || (buttonPressed() == BUTTON_SELECT))
+      {
+        GPS_INITIALIZED_CORRECTLY = 0;
+        STATE = MAIN_SCREEN;
       }
     }
-
-    //Begin scanning for tags
-    nano.startReading();
-
-
-    while (STATE == MAIN_SCREEN)
+  }
+  if (!isInReadingMode)
+  {
+    if (statusCode = setupCommunicationWriteMode())
     {
-      char myEPC[50] = "";
+      drawErrorScreen(statusCode);
+      while (1);
+    }
+  }
+}
 
-      if (LED_TOGGLE)
-      {
-        displayGreen();
-      }
-      else
-      {
-        turnOff();
-      }
-
-      if (millis() - TOGGLE_LED_TIMER >= TWO_SECONDS_IN_MS)
-      {
-        //update new battery check time
-        TOGGLE_LED_TIMER = millis();
-
-        //check battery charge
-        LED_TOGGLE = !LED_TOGGLE;
-      }
+void loop() {
 
 
-      //If we havent checked the battery charge in over 10 minutes
-      if (millis() - previousBatteryCheckTime >= ONE_MINUTE_IN_MS)
-      {
-        //update new battery check time
-        previousBatteryCheckTime = millis();
+  if (isInReadingMode)
+  {
+    // put your main code here, to run repeatedly:
 
-        //check battery charge
-        writeCharge(getBatteryPercentage());
-      }
+    //code if system is in main state
+    if (STATE == MAIN_SCREEN)
+    {
+      //reset turtle already logged
+      int turtleAlreadyLogged = 0;
 
-      if (getBatteryPercentage() <= 5)
-      {
-        nano.stopReading();
-        drawCriticalBatteryScreen();
-        while (1);
-      }
-
-      /*if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
-      {
-        tenMinuteBatterySplashscreen = 1;
-        tenMinuteSplashScreen();
-
-          displayGreen();
-    drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
-    drawTurtlesFound(turtlesFound);
-    writeCharge(getBatteryPercentage());
-      }*/
+      //display green LED and draw main screen
+      displayGreen();
+      drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
+      drawTurtlesFound(turtlesFound);
+      writeCharge(getBatteryPercentage());
 
       //if gps fix is available, read it in
       if (GPS_INITIALIZED_CORRECTLY)
@@ -256,222 +213,356 @@ void loop() {
         }
       }
 
-      //Loop checking for high signal from RFID reader
-      if (nano.check() == true) //Check to see if any new data has come in from module
+      //Begin scanning for tags
+      nano.startReading();
+
+
+      while (STATE == MAIN_SCREEN)
       {
+        char myEPC[50] = "";
 
-        byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
-
-        //only check if we found a tag, dont care about anything else
-        if (responseType == RESPONSE_IS_TAGFOUND)
+        if (LED_TOGGLE)
         {
-          //sound buzzer is tag found
-          soundBuzzer();
-
-          byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
-          //Print EPC bytes, this is a subsection of bytes from the response/msg array
-          for (byte x = 0 ; x < tagEPCBytes ; x++)
-          {
-            char arrayByte[3];
-
-            if (nano.msg[31 + x] < 0x10)
-            {
-              strcat(myEPC, "0"); //Pretty print
-            }
-            //convert int to char array
-            itoa (nano.msg[31 + x], arrayByte, 10);
-            //add it to the end of our ID char array
-            strcat(myEPC, arrayByte);
-
-            strcat(myEPC, " ");
-          }
-          //NeoSerial.println(myEPC);
-
-          //See if we already found tag
-          for (int i = 0; i < turtlesFound; i++)
-          {
-            if (!strcmp(myEPC, tagIDS[i]))
-            {
-              //if we have, done treat it as a new detection event
-              turtleAlreadyLogged = 1;
-              break;
-            }
-          }
-          //If tag found for the first time
-          if (!turtleAlreadyLogged)
-          {
-            //If GPS is working, go to detection state
-            //If not, no point in going as we cant get coordinates or timestamp
-            if (GPS_INITIALIZED_CORRECTLY)
-            {
-              STATE = DETECTION_SCREEN;
-            }
-            //add turtle to log
-            strcpy(tagIDS[turtlesFound] , myEPC);
-
-            //if neither initialized, show user the tag found, user must press select to advance
-            if (!GPS_INITIALIZED_CORRECTLY && !SD_INITIALIZED_CORRECTLY)
-            {
-              displayRed();
-              drawBasicDetectionScreen(myEPC);
-              BUTTON_SELECT_TIMEOUT = millis();
-              while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
-
-              drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
-              writeCharge(getBatteryPercentage());
-            }
-
-            //if no GPS but there is SD, log the tag ID found
-            if (!GPS_INITIALIZED_CORRECTLY && SD_INITIALIZED_CORRECTLY)
-            {
-              displayRed();
-              drawBasicDetectionScreen(myEPC);
-              BUTTON_SELECT_TIMEOUT = millis();
-              while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
-              logDetectionEvent(myEPC, "GPS Data Timout", "GPS Data Timout", 1234567, 1234567);
-              drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
-              writeCharge(getBatteryPercentage()); 
-            }
-
-            //update number of turtles found
-            turtlesFound++;
-            drawTurtlesFound(turtlesFound);
-          }
-          //reset flag
-          turtleAlreadyLogged = 0;
+          displayGreen();
         }
+        else
+        {
+          turnOff();
+        }
+
+        if (millis() - TOGGLE_LED_TIMER >= TWO_SECONDS_IN_MS)
+        {
+          //update new battery check time
+          TOGGLE_LED_TIMER = millis();
+
+          //check battery charge
+          LED_TOGGLE = !LED_TOGGLE;
+        }
+
+
+        //If we havent checked the battery charge in over 10 minutes
+        if (millis() - previousBatteryCheckTime >= ONE_MINUTE_IN_MS)
+        {
+          //update new battery check time
+          previousBatteryCheckTime = millis();
+
+          //check battery charge
+          writeCharge(getBatteryPercentage());
+        }
+
+        if (getBatteryPercentage() <= 5)
+        {
+          nano.stopReading();
+          drawCriticalBatteryScreen();
+          while (1);
+        }
+
+        /*  if (getBatteryPercentage() <= 10 && !tenMinuteBatterySplashscreen)
+          {
+            tenMinuteBatterySplashscreen = 1;
+            tenMinuteSplashScreen();
+
+              displayGreen();
+          drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
+          drawTurtlesFound(turtlesFound);
+          writeCharge(getBatteryPercentage());
+          }*/
+
+
+
+
+        //if gps fix is available, read it in
+        if (GPS_INITIALIZED_CORRECTLY)
+        {
+          if (gps.available())
+          {
+            //Read Fix
+            fix = gps.read();
+          }
+        }
+
+        //Loop checking for high signal from RFID reader
+        if (nano.check() == true) //Check to see if any new data has come in from module
+        {
+
+          byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
+
+          //only check if we found a tag, dont care about anything else
+          if (responseType == RESPONSE_IS_TAGFOUND)
+          {
+            //sound buzzer is tag found
+            soundBuzzer();
+
+            byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
+            //Print EPC bytes, this is a subsection of bytes from the response/msg array
+            for (byte x = 0 ; x < tagEPCBytes ; x++)
+            {
+              char arrayByte[3];
+
+              if (nano.msg[31 + x] < 0x10)
+              {
+                strcat(myEPC, "0"); //Pretty print
+              }
+              //convert int to char array
+              itoa (nano.msg[31 + x], arrayByte, 10);
+              //add it to the end of our ID char array
+              strcat(myEPC, arrayByte);
+
+              strcat(myEPC, " ");
+            }
+            //NeoSerial.println(myEPC);
+
+            //See if we already found tag
+            for (int i = 0; i < turtlesFound; i++)
+            {
+              if (!strcmp(myEPC, tagIDS[i]))
+              {
+                //if we have, done treat it as a new detection event
+                turtleAlreadyLogged = 1;
+                break;
+              }
+            }
+            //If tag found for the first time
+            if (!turtleAlreadyLogged)
+            {
+              //If GPS is working, go to detection state
+              //If not, no point in going as we cant get coordinates or timestamp
+              if (GPS_INITIALIZED_CORRECTLY)
+              {
+                STATE = DETECTION_SCREEN;
+              }
+              //add turtle to log
+              strcpy(tagIDS[turtlesFound] , myEPC);
+
+              //if neither initialized, show user the tag found, user must press select to advance
+              if (!GPS_INITIALIZED_CORRECTLY && !SD_INITIALIZED_CORRECTLY)
+              {
+                displayRed();
+                drawBasicDetectionScreen(myEPC);
+                BUTTON_SELECT_TIMEOUT = millis();
+                while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
+
+                drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
+                writeCharge(getBatteryPercentage());
+              }
+
+              //if no GPS but there is SD, log the tag ID found
+              if (!GPS_INITIALIZED_CORRECTLY && SD_INITIALIZED_CORRECTLY)
+              {
+                displayRed();
+                drawBasicDetectionScreen(myEPC);
+                BUTTON_SELECT_TIMEOUT = millis();
+                while ((buttonSelect = buttonPressed() == BUTTON_NONE) && (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT));
+                logDetectionEvent(myEPC, "GPS Data Timeout", "GPS Data Timeout", 1234567, 1234567);
+                drawMainScreen(GPS_INITIALIZED_CORRECTLY, SD_INITIALIZED_CORRECTLY);
+                writeCharge(getBatteryPercentage());
+              }
+
+              //update number of turtles found
+              turtlesFound++;
+              drawTurtlesFound(turtlesFound);
+            }
+            //reset flag
+            turtleAlreadyLogged = 0;
+          }
+        }
+      }
+    }
+
+    //code if turtle found
+    if (STATE == DETECTION_SCREEN)
+    {
+      //NeoSerial.println("Detection state");
+      //initilize detection event structure
+      detectionEventInfo detectionEvent;
+      char timeStamp[25];
+      char dateString[25];
+      float detectionScreenLong = 0;
+      float detectionScreenLat = 0;
+
+      char epcFound[50] = "";
+
+      //Turn LED RED
+      displayRed();
+      //sound buzzer
+      soundBuzzer();
+
+      //set tag ID into struct
+      strcpy(detectionEvent.tagID , tagIDS[turtlesFound - 1]);
+      sprintf(epcFound, "ID: %s", detectionEvent.tagID);
+
+      //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
+      gatheringGPSScreen();
+
+      if (!fix.valid.location || !fix.valid.time || !fix.valid.date)
+      {
+        while (!gps.available());
+        fix = gps.read();
+        GPS_GATHERING_DATA_TIMEOUT = millis();
+        //wait until we have valid data from GPS to save
+        while (!fix.valid.location || !fix.valid.time || !fix.valid.date)
+        {
+          if (gps.available())
+          {
+            //Read Fix
+            fix = gps.read();
+          }
+          if ((millis() - GPS_GATHERING_DATA_TIMEOUT) >= THIRTY_SECONDS_IN_MS)
+          {
+            GPS_GATHERING_TIMEOUT = 1;
+            break;
+          }
+        }
+      }
+
+      //If location vaild
+      if (fix.valid.location)
+      {
+        detectionEvent.latitude = fix.latitudeL();
+        detectionEvent.longitude = fix.longitudeL();
+
+        detectionScreenLong = (detectionEvent.longitude) / (10000000.00);
+        detectionScreenLat = (detectionEvent.latitude) / (10000000.00);
+      }
+
+      if (fix.valid.time && fix.valid.date)
+      {
+        //Adjust time to EST
+        adjustTime(fix.dateTime);
+        //Convert from military time to conventional
+        fix.dateTime.setAMorPM();
+
+        //Format date string and save
+        sprintf(timeStamp, "%d:%02d:%02d %02d-%02d-%d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds, fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
+        sprintf(detectionEvent.timeS, "%d:%02d:%02d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds);
+        sprintf(detectionEvent.dateS, "%02d-%02d-%d", fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
+        sprintf(dateString, "Time: %s", timeStamp);
+      }
+
+      if (!GPS_GATHERING_TIMEOUT)
+      {
+        //After data collection, Draw Screen
+        drawDetectionScreen(epcFound, dateString, detectionScreenLong, detectionScreenLat);
+      }
+      else
+      {
+        drawDetectionScreen(epcFound, "GPS Data Timout", 00.000, 00.000);
+      }
+
+
+      //Set button timeout variable
+      BUTTON_SELECT_TIMEOUT = millis();
+
+      //Wait for either Yes or no to log data (check input push buttons)
+      //Timeout after set time of no button pressed
+      while (((buttonSelect = buttonPressed() != BUTTON_SELECT)) &&
+             (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT))
+      {
+        switch (buttonSelect)
+        {
+          case (BUTTON_LEFT):
+            drawYesSelection();
+            break;
+          case (BUTTON_RIGHT):
+            drawNoSelection();
+            break;
+        }
+      }
+
+      //IF yes is selected and timeout is not met, log data and display on UI
+      if ((optionSelected() == YES_SELECTED))
+      {
+        //If Yes and SD card initialized correctly: Log to SD card
+        if (SD_INITIALIZED_CORRECTLY)
+        {
+          if (!GPS_GATHERING_TIMEOUT)
+          {
+            if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
+            {
+              DEBUG_PORT.println("Error logging to SD Card");
+            }
+          }
+          else
+          {
+            if (!(logDetectionEvent(detectionEvent.tagID, "GPS Data Timout", "GPS Data Timout", 1234567, 1234567)))
+            {
+              DEBUG_PORT.println("Error logging to SD Card");
+            }
+            GPS_GATHERING_TIMEOUT = 0;
+          }
+        }
+        STATE = MAIN_SCREEN;
+      }
+      else
+      {
+        //If No: Go back to MAIN_SCREEN state
+        STATE = MAIN_SCREEN;
       }
     }
   }
 
-  //code if turtle found
-  if (STATE == DETECTION_SCREEN)
+  if (!isInReadingMode)
   {
-    //NeoSerial.println("Detection state");
-    //initilize detection event structure
-    detectionEventInfo detectionEvent;
-    char timeStamp[25];
-    char dateString[25];
-    float detectionScreenLong = 0;
-    float detectionScreenLat = 0;
+    /*
+       TODO
 
-    char epcFound[50] = "";
-
-    //Turn LED RED
-    displayRed();
-    //sound buzzer
-    soundBuzzer();
-
-    //set tag ID into struct
-    strcpy(detectionEvent.tagID , tagIDS[turtlesFound - 1]);
-    sprintf(epcFound, "ID: %s", detectionEvent.tagID);
-
-    //Wait for next GPS input and parse time and coordinates out and save to detectionEvent struct
-    gatheringGPSScreen();
-
-    if (!fix.valid.location || !fix.valid.time || !fix.valid.date)
-    {
-      while (!gps.available());
-      fix = gps.read();
-      GPS_GATHERING_DATA_TIMEOUT = millis();
-      //wait until we have valid data from GPS to save
-      while (!fix.valid.location || !fix.valid.time || !fix.valid.date)
-      {
-        if (gps.available())
-        {
-          //Read Fix
-          fix = gps.read();
-        }
-        if ((millis() - GPS_GATHERING_DATA_TIMEOUT) >= THIRTY_SECONDS_IN_MS)
-        {
-          GPS_GATHERING_TIMEOUT = 1;
-          break;
-        }
-      }
-    }
-
-    //If location vaild
-    if (fix.valid.location)
-    {
-      detectionEvent.latitude = fix.latitudeL();
-      detectionEvent.longitude = fix.longitudeL();
-
-      detectionScreenLong = (detectionEvent.longitude) / (10000000.00);
-      detectionScreenLat = (detectionEvent.latitude) / (10000000.00);
-    }
-
-    if (fix.valid.time && fix.valid.date)
-    {
-      //Adjust time to EST
-      adjustTime(fix.dateTime);
-      //Convert from military time to conventional
-      fix.dateTime.setAMorPM();
-
-      //Format date string and save
-      sprintf(timeStamp, "%d:%02d:%02d %02d-%02d-%d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds, fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
-      sprintf(detectionEvent.timeS, "%d:%02d:%02d", fix.dateTime.hours, fix.dateTime.minutes, fix.dateTime.seconds);
-      sprintf(detectionEvent.dateS, "%02d-%02d-%d", fix.dateTime.month, fix.dateTime.date, fix.dateTime.year);
-      sprintf(dateString, "Time: %s", timeStamp);
-    }
-
-    if (!GPS_GATHERING_TIMEOUT)
-    {
-      //After data collection, Draw Screen
-      drawDetectionScreen(epcFound, dateString, detectionScreenLong, detectionScreenLat);
-    }
-    else
-    {
-      drawDetectionScreen(epcFound, "GPS Data Timout", 00.000, 00.000);
-    }
+       tagIDToWrite = 0
 
 
-    //Set button timeout variable
-    BUTTON_SELECT_TIMEOUT = millis();
+       -display number screen
 
-    //Wait for either Yes or no to log data (check input push buttons)
-    //Timeout after set time of no button pressed
-    while (((buttonSelect = buttonPressed() != BUTTON_SELECT)) &&
-      (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT))
-    {
-      switch (buttonSelect)
-      {
-        case (BUTTON_LEFT):
-          drawYesSelection();
-          break;
-        case (BUTTON_RIGHT):
-          drawNoSelection();
-          break;
-      }
-    }
+       printDesiredTagValue(tagIDToWrite); //shows 0 on screen
 
-    //IF yes is selected and timeout is not met, log data and display on UI
-    if ((optionSelected() == YES_SELECTED))
-    {
-      //If Yes and SD card initialized correctly: Log to SD card
-      if (SD_INITIALIZED_CORRECTLY)
-      {
-        if (!GPS_GATHERING_TIMEOUT)
-        {
-          if (!(logDetectionEvent(detectionEvent.tagID, detectionEvent.timeS, detectionEvent.dateS, detectionEvent.latitude, detectionEvent.longitude)))
+       while(check for buttons)
+       {
+          if(left && tagIDToWrite>0)
           {
-            DEBUG_PORT.println("Error logging to SD Card");
+            tagIDToWrite--;
+            printDesiredTagValue(tagIDToWrite); //decrement variable and value shown on screen
+          }
+
+          if(right && tagIDToWrite<255)
+          {
+            tagIDToWrite++;
+            printDesiredTagValue(tagIDToWrite);  //increment variable and value shown on screen
+          }
+
+          if(buttonpressed == select)
+          {
+              break;                             //if select -  break out of while and proceed with current variable value
           }
         }
-        else
+
+        //display are you sure screen
+        //areYouSureScreen(tagIDToWrite);
+
+        //Same logic as our current "yes or no screen"
+
+        if(yes)
         {
-          if (!(logDetectionEvent(detectionEvent.tagID, "GPS Data Timout", "GPS Data Timout", 1234567, 1234567)))
+          if(writeToTag(tagIDToWrite))
           {
-            DEBUG_PORT.println("Error logging to SD Card");
+            //display tag successful screen, do you want to write another tag
+
+            //if yes back to number screen
+
+            //if no tell user to turn off device or power cycle if they want to use it further
           }
-          GPS_GATHERING_TIMEOUT = 0;
+          else
+          {
+            //display tag not written successfully do you want to try again
+
+            //if yes back to number screen
+
+            //if no tell user to turn off device or power cycle if they want to use it further
+
+          }
         }
-      }
-      STATE = MAIN_SCREEN;
-    }
-    else
-    {
-      //If No: Go back to MAIN_SCREEN state
-      STATE = MAIN_SCREEN;
-    }
+        if(no)
+        {
+            back to number screen
+        }
+
+    */
   }
 }

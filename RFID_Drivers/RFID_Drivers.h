@@ -14,7 +14,7 @@ boolean setupNano(long baudRate);
 
 int setupCommunication();
 int setupCommunicationWriteMode();
-int writeToTag(int idToWrite)
+int writeToTag(int idToWrite);
 
 
 #endif
