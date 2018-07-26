@@ -73,7 +73,7 @@ void setup() {
   while (!NeoSerial);
 
   // Ask user for read/write mode
-  drawModeSelectionScreen();
+  drawModeSelectScreen();
   while (buttonSelect = buttonPressed() != BUTTON_SELECT)
   {
     switch (buttonSelect)
