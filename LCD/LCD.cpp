@@ -78,6 +78,9 @@ void drawInitializationScreen()
         tft.print("for");
         setupText(90,140,BLACK,3);
         tft.print("GPS Fix");
+		
+		setupText(20,220,BLACK,2);
+        tft.print("Press select for no GPS");
 }
 
 /**
@@ -118,6 +121,15 @@ void drawCriticalBatteryScreen()
         tft.print("LOW");
 }
 
+/**
+ * Function: tenMinuteSplashScreen()
+ *---------------------
+ * 2 second splash screen to infrom user of <10 min of
+ * battery life remaining
+ *
+ * Parameters: None
+ * Return: None
+ */
 void tenMinuteSplashScreen()
 {
         tft.fillScreen(WHITE);
@@ -182,7 +194,17 @@ int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat)
         return 1;
 }
 
-
+/**
+ * Function: drawDetectionScreen()
+ *---------------------
+ * Draws detection screen with detetion event information
+ *
+ * Parameters: char ID[] - Id of tag found
+ * char timeStamp[] - timestamp of when turtle was found
+ * float Long - longitude of detection event
+ * float Lat - latitude of detection event
+ * Return: None
+ */
 int drawBasicDetectionScreen(char ID[])
 {
 
@@ -356,6 +378,14 @@ void drawErrorScreen(int errorCode)
         }
 }
 
+/**
+ * Function: printDesiredTagValue()
+ *---------------------
+ * Updates Desired tag value based on user input
+ *
+ * Parameters: int desiredTagID - number user is modifying
+ * Return: None
+ */
 void printDesiredTagValue(int desiredTagID)
 {
         tft.fillRect(139,139,75,50,WHITE);
@@ -363,6 +393,14 @@ void printDesiredTagValue(int desiredTagID)
         tft.print(desiredTagID);
 }
 
+/**
+ * Function: drawModeSelectScreen()
+ *---------------------
+ * Prompts user which mode they would like to start the system in
+ *
+ * Parameters: None
+ * Return: None
+ */
 void drawModeSelectScreen()
 {
         tft.fillScreen(WHITE);
@@ -380,6 +418,14 @@ void drawModeSelectScreen()
         tft.fillTriangle(188, 190, 188, 202, 200, 196, WHITE);
 }
 
+/**
+ * Function: writeConfirmationScreen()
+ *---------------------
+ * Confirmation screen after user has selected value to write to tag
+ *
+ * Parameters: WriteVal - Value user has selected to write to tag
+ * Return: None
+ */
 void writeConfirmationScreen(int writeVal)
 {
         char stringToWrite [6];
@@ -401,6 +447,14 @@ void writeConfirmationScreen(int writeVal)
         tft.fillTriangle(188, 190, 188, 202, 200, 196, WHITE);
 }
 
+/**
+ * Function: drawNumberScreen()
+ *---------------------
+ * Write screen for user to select ID tag to write
+ *
+ * Parameters: None
+ * Return: None
+ */
 void drawNumberScreen()
 {
         tft.fillScreen(WHITE);
@@ -413,6 +467,14 @@ void drawNumberScreen()
         tft.fillTriangle(210, 190, 210, 202, 222, 196, BLACK);
 }
 
+/**
+ * Function: drawWriteSuccessful()
+ *---------------------
+ * Flash successful screen for successful tag write
+ *
+ * Parameters: None
+ * Return: None
+ */
 void drawWriteSuccessful()
 {
         tft.fillScreen(GREEN);
@@ -422,6 +484,14 @@ void drawWriteSuccessful()
         delay(3000);
 }
 
+/**
+ * Function: drawWriteFailure()
+ *---------------------
+ * Flash failure screen for unsuccessful tag write
+ *
+ * Parameters: None
+ * Return: None
+ */
 void drawWriteFailure()
 {
         tft.fillScreen(RED);
