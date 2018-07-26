@@ -361,3 +361,39 @@ void drawModeSelectScreen()
         setupText(208, 190, BLACK, 2);
         tft.print("Write");
 }
+
+void writeConfirmationScreen(int writeVal)
+{
+	char stringToWrite [5];
+	
+	tft.fillScreen(WHITE);
+    setupText(20,80,BLACK,2);
+    tft.print("Write Value?");
+	
+    sprintf(stringToWrite," %d ",writeVal);
+    setupText(245,5,WHITE,2);
+    tft.print(stringToWrite);
+				
+	setupText(80, 190, BLACK, 2);
+    tft.print("Read");
+    setupText(208, 190, BLACK, 2);
+    tft.print("Write");
+}
+
+void drawWriteSuccessful()
+{
+	tft.fillScreen(GREEN);
+    setupText(20,100,BLACK,2);
+    tft.print("Write Success!");
+	
+	delay(3000);
+}
+
+void drawWriteFailure()
+{
+	tft.fillScreen(RED);
+    setupText(20,100,BLACK,2);
+    tft.print("Write Failure!");
+	
+	delay(3000);
+}
