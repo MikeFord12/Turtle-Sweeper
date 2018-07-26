@@ -72,17 +72,16 @@ int logDetectionEvent(char idNum[], char timeS[], char dateS[], long Lat, long L
         char dataString[120];
         char longStr[15];
         char latStr[15];
-        //  NeoSerial.print("Lat: ");
-        //    NeoSerial.println(Lat);
-        //  NeoSerial.print("Long: ");
-        //  NeoSerial.println(Long);
+
+//if our dummy data values were passed in, replace with "N/A"
         if (Lat != 1234567 && Long !=1234567)
         {
 
-
+                //Lat and long are passed in as longs in order to keep 7 digits of precision
                 ltoa(Lat,latStr,10);
                 ltoa(Long,longStr,10);
 
+//need to place decimal points in long and lat strings
                 memmove(
                         longStr + make_room_at_long + room_to_make,
                         longStr + make_room_at_long,

@@ -87,11 +87,13 @@ int setupCommunicationWriteMode()
 
         return 0;
 }
+
+
 int writeToTag(int idToWrite)
 {
         char tagBase[12]="";
 
-
+        //we are only ever changing the last byte of the tag ID, so fill first 11 bytes as 0
         sprintf(tagBase,"%c%c%c%c%c%c%c%c%c%c%c%c",(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)0,(char)idToWrite);
 
         byte responseType = nano.writeTagEPC(tagBase, 12);
