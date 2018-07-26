@@ -516,7 +516,7 @@ void loop() {
     printDesiredTagValue(tagIDToWrite); //shows 0 on screen
 
     // loop until button select is pressed
-    while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+    while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
     {
        //decrement variable and value shown on screen
       if ((buttonSelect == BUTTON_LEFT) && tagIDToWrite > 0)
@@ -537,7 +537,7 @@ void loop() {
     writeConfirmationScreen(tagIDToWrite);
 
     // Prompt user for selection ensure
-    while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+    while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
     {
       switch (buttonSelect)
       {
