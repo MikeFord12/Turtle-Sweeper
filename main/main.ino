@@ -87,7 +87,7 @@ void setup() {
 
   // Ask user for read/write mode
   drawModeSelectScreen();
-  while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+  while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
   {
     switch (buttonSelect)
     {
@@ -99,6 +99,8 @@ void setup() {
         break;
     }
   }
+
+
 
   if (optionSelected() == YES_SELECTED)
   {
@@ -455,7 +457,7 @@ void loop() {
 
       //Wait for either Yes or no to log data (check input push buttons)
       //Timeout after set time of no button pressed
-      while (((buttonSelect = buttonPressed() != BUTTON_SELECT)) &&
+      while (((buttonSelect = buttonPressed()) != BUTTON_SELECT) &&
              (millis() - BUTTON_SELECT_TIMEOUT < BUTTON_TIMEOUT))
       {
         switch (buttonSelect)
@@ -509,7 +511,7 @@ void loop() {
 
     printDesiredTagValue(tagIDToWrite); //shows 0 on screen
 
-    while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+    while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
     {
       if ((buttonSelect == BUTTON_LEFT) && tagIDToWrite > 0)
       {
@@ -529,7 +531,7 @@ void loop() {
 
     //Same logic as our current "yes or no screen"
 
-    while (buttonSelect = buttonPressed() != BUTTON_SELECT)
+    while ((buttonSelect = buttonPressed()) != BUTTON_SELECT)
     {
       switch (buttonSelect)
       {

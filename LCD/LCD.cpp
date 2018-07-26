@@ -186,16 +186,31 @@ int drawDetectionScreen(char ID[], char timeStamp[], float Long, float Lat)
 int drawBasicDetectionScreen(char ID[])
 {
 
+        char lastPartOfID[4];
+        memcpy(lastPartOfID, &ID[strlen(ID)-3],3);
+        lastPartOfID[3] = '\0';
         tft.fillScreen(WHITE);
         setupText(60,5,BLACK,2);
         tft.print("TURTLE DETECTED");
         tft.drawRect(10,70,300,70,WHITE);
 
-        setupText(0,30,BLACK,2);
-        tft.setTextWrap(true);
-        tft.print(ID);
+        setupText(30,30,BLACK,2);
+        tft.print("ID:");
+        setupText(70,30,BLACK,2);
+        tft.print(lastPartOfID);
+        setupText(30,70,BLACK,2);
+        tft.print("Time Stamp: N/A");
+        setupText(30,100,BLACK,2);
+        tft.print("GPS Longitude: N/A");
+        setupText(30,130,BLACK,2);
+        tft.print("GPS Latitude: N/A");
 
-        setupText(0,150,WHITE,2);
+
+        /*  setupText(0,30,BLACK,2);
+           tft.setTextWrap(true);
+           tft.print(ID);
+         */
+        setupText(0,190,BLACK,2);
         tft.print("Press any button to continue.");
 
         return 1;
@@ -343,17 +358,17 @@ void drawErrorScreen(int errorCode)
 
 void printDesiredTagValue(int desiredTagID)
 {
-        tft.fillRect(139,79,75,50,WHITE);
-        setupText(140,80,BLACK,3);
-        tft.print(desiredTagID,HEX);
+        tft.fillRect(139,139,75,50,WHITE);
+        setupText(160,140,BLACK,3);
+        tft.print(desiredTagID);
 }
 
 void drawModeSelectScreen()
 {
         tft.fillScreen(WHITE);
-        setupText(40,80,BLACK,2);
+        setupText(40,80,BLACK,3);
         tft.print("Select");
-        setupText(110,80,BLACK,2);
+        setupText(190,80,BLACK,3);
         tft.print("Mode");
 
         setupText(80, 190, BLACK, 2);
@@ -370,12 +385,12 @@ void writeConfirmationScreen(int writeVal)
         char stringToWrite [6];
 
         tft.fillScreen(WHITE);
-        setupText(20,80,BLACK,2);
+        setupText(60,30,BLACK,3);
         tft.print("Write Value?");
 
-        sprintf(stringToWrite," %d ",writeVal);
-        setupText(245,5,WHITE,2);
-        tft.print(stringToWrite);
+
+        setupText(160,110,BLACK,3);
+        tft.print(writeVal);
 
         setupText(80, 190, BLACK, 2);
         tft.print("Yes");
@@ -389,11 +404,13 @@ void writeConfirmationScreen(int writeVal)
 void drawNumberScreen()
 {
         tft.fillScreen(WHITE);
-        setupText(20,80,BLACK,2);
-        tft.print("Scroll to desired ID (0-255)");
+        setupText(50,20,BLACK,2);
+        tft.print("Scroll to desired ID");
+        setupText(120,60,BLACK,2);
+        tft.print("(0-255)");
 
-        tft.fillTriangle( 61, 196, 72, 190, 73, 202, BLACK);
-        tft.fillTriangle(188, 190, 188, 202, 200, 196, BLACK);
+        tft.fillTriangle( 99, 196, 110, 190, 110, 202, BLACK);
+        tft.fillTriangle(210, 190, 210, 202, 222, 196, BLACK);
 }
 
 void drawWriteSuccessful()

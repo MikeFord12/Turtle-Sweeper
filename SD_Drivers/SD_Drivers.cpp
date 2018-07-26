@@ -76,29 +76,36 @@ int logDetectionEvent(char idNum[], char timeS[], char dateS[], long Lat, long L
         //    NeoSerial.println(Lat);
         //  NeoSerial.print("Long: ");
         //  NeoSerial.println(Long);
-
-        ltoa(Lat,latStr,10);
-        ltoa(Long,longStr,10);
-
-        memmove(
-                longStr + make_room_at_long + room_to_make,
-                longStr + make_room_at_long,
-                15 - (make_room_at_long + room_to_make)
-                );
-        longStr[make_room_at_long] = '.';
+        if (Lat != 1234567 && Long !=1234567)
+        {
 
 
-        memmove(
-                latStr + make_room_at_lat + room_to_make,
-                latStr + make_room_at_lat,
-                15 - (make_room_at_lat + room_to_make)
-                );
-        latStr[make_room_at_lat] = '.';
+                ltoa(Lat,latStr,10);
+                ltoa(Long,longStr,10);
+
+                memmove(
+                        longStr + make_room_at_long + room_to_make,
+                        longStr + make_room_at_long,
+                        15 - (make_room_at_long + room_to_make)
+                        );
+                longStr[make_room_at_long] = '.';
+
+
+                memmove(
+                        latStr + make_room_at_lat + room_to_make,
+                        latStr + make_room_at_lat,
+                        15 - (make_room_at_lat + room_to_make)
+                        );
+                latStr[make_room_at_lat] = '.';
 
 
 
-        sprintf(dataString,"%s,%s,%s,%s,%s",idNum,dateS,timeS,latStr,longStr);
-
+                sprintf(dataString,"%s,%s,%s,%s,%s",idNum,dateS,timeS,latStr,longStr);
+        }
+        else
+        {
+                sprintf(dataString,"%s,%s,%s,%s,%s",idNum,dateS,timeS,"N/A","N/A");
+        }
         //open file
         detectionData = SD.open("Data.csv", FILE_WRITE);
         if (detectionData)

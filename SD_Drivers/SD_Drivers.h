@@ -8,7 +8,7 @@
 //SD Card
 #define SD_CARD_SLAVE_SELECT_PIN 4
 //extern char* dataFile;
-extern File myFile;;
+extern File myFile;
 
 struct detectionEventInfo
 {
