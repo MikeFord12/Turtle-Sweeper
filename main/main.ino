@@ -87,7 +87,6 @@ void setup() {
   setupPushButtons();
   //NeoSerial.println("Buttons initalized");
 
-
   // Ask user for read/write mode
   drawModeSelectScreen();
 
@@ -98,9 +97,11 @@ void setup() {
     switch (buttonSelect)
     {
       case (BUTTON_LEFT):
+      NeoSerial.println("LEFT BUTTON PUSHED");
         drawYesSelection();
         break;
       case (BUTTON_RIGHT):
+      NeoSerial.println("RIGHT BUTTON PUSHED");
         drawNoSelection();
         break;
     }
