@@ -42,23 +42,27 @@ int buttonPressed()
                 if (digitalRead(SELECT_BUTTON_PIN) &&
                     !(digitalRead(LEFT_BUTTON_PIN) || digitalRead(RIGHT_BUTTON_PIN)))
                 {
+                        //  NeoSerial.println("Select Being Pressed");
                         reading = BUTTON_SELECT;
                 }
                 // Determine if left button is pressed, and no other buttons are pressed
                 else if (digitalRead(LEFT_BUTTON_PIN) &&
                          !(digitalRead(SELECT_BUTTON_PIN) || digitalRead(RIGHT_BUTTON_PIN)))
                 {
+                        //NeoSerial.println("Left Being Pressed");
                         reading = BUTTON_LEFT;
                 }
                 // Determine if right button is pressed, and no other buttons are pressed
                 else if (digitalRead(RIGHT_BUTTON_PIN) &&
                          !(digitalRead(SELECT_BUTTON_PIN) || digitalRead(LEFT_BUTTON_PIN)))
                 {
+                        //    NeoSerial.println("Right Being Pressed");
                         reading = BUTTON_RIGHT;
                 }
                 // Determine if no button is pressed
                 else
                 {
+                        //  NeoSerial.println("No button Being Pressed");
                         // Enable another pressing of button, return no button pressed
                         buttonResetFlag = 0;
                         return BUTTON_NONE;

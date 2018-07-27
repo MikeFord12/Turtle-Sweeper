@@ -3,20 +3,20 @@
 
 #include <Arduino.h>
 #include <string.h>
+#include "NeoHWSerial.h"
 
 // PushButton Pins
-#define LEFT_BUTTON_PIN 34
+#define LEFT_BUTTON_PIN 30
 #define RIGHT_BUTTON_PIN 32
 #define SELECT_BUTTON_PIN 36
 
-// PushButton output defines
 #define BUTTON_NONE 0
 #define BUTTON_LEFT 1
 #define BUTTON_RIGHT 2
 #define BUTTON_SELECT 3
 
 // Timeout for no button selection
-#define BUTTON_TIMEOUT 15000
+#define BUTTON_TIMEOUT 10000
 
 // Set delay time
 #define DEBOUNCE_ITERATIONS 5
