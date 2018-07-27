@@ -388,8 +388,8 @@ void drawErrorScreen(int errorCode)
  */
 void printDesiredTagValue(int desiredTagID)
 {
-        tft.fillRect(139,139,75,50,WHITE);
-        setupText(160,140,BLACK,3);
+        tft.fillRect(139,129,75,50,WHITE);
+        setupText(150,135,BLACK,3);
         tft.print(desiredTagID);
 }
 
@@ -435,7 +435,7 @@ void writeConfirmationScreen(int writeVal)
         tft.print("Write Value?");
 
 
-        setupText(160,110,BLACK,3);
+        setupText(145,110,BLACK,3);
         tft.print(writeVal);
 
         setupText(80, 190, BLACK, 2);
@@ -478,7 +478,7 @@ void drawNumberScreen()
 void drawWriteSuccessful()
 {
         tft.fillScreen(GREEN);
-        setupText(20,100,BLACK,2);
+        setupText(20,100,BLACK,3);
         tft.print("Write Success!");
 
         delay(3000);
@@ -495,7 +495,7 @@ void drawWriteSuccessful()
 void drawWriteFailure()
 {
         tft.fillScreen(RED);
-        setupText(20,100,BLACK,2);
+        setupText(20,100,BLACK,3);
         tft.print("Write Failure!");
 
         delay(3000);
